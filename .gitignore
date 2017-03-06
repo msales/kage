@@ -1,0 +1,4 @@
+kage.log
+build/
+vendor/
+!vendor/manifest

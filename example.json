@@ -1,0 +1,22 @@
+{
+  "log": {
+    "path": "./kage.log",
+    "level": "debug"
+  },
+  "log-metrics": true,
+  "kafka": {
+    "brokers": [
+      "127.0.0.1:9092"
+    ]
+  },
+  "influx": {
+    "address": "http://127.0.0.1:8086",
+    "username": "",
+    "password": "",
+    "database": "metrics",
+    "tags": {
+      "cluster": "local",
+      "environment": "local"
+    }
+  }
+}
