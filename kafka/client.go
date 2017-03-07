@@ -62,7 +62,7 @@ func New(opts ...ClientFunc) (*Client, error) {
 	client.getOffsets()
 	client.brokerOffsetTicker = time.NewTicker(30 * time.Second)
 	go func() {
-		for _ = range client.brokerOffsetTicker.C {
+		for range client.brokerOffsetTicker.C {
 			client.getOffsets()
 		}
 	}()
@@ -71,7 +71,7 @@ func New(opts ...ClientFunc) (*Client, error) {
 	client.getConsumerOffsets()
 	client.consumerOffsetTicker = time.NewTicker(30 * time.Second)
 	go func() {
-		for _ = range client.consumerOffsetTicker.C {
+		for range client.consumerOffsetTicker.C {
 			client.getConsumerOffsets()
 		}
 	}()
@@ -196,7 +196,7 @@ func (c *Client) getConsumerOffsets() error {
 			continue
 		}
 
-		for group, _ := range groups.Groups {
+		for group := range groups.Groups {
 			coordinator, err := c.client.Coordinator(group)
 			if err != nil {
 				c.log.Error(fmt.Sprintf("Cannot fetch co-ordinator for group %s: %v", group, err))
