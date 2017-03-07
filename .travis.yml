@@ -16,7 +16,7 @@ script:
   - $HOME/gopath/bin/goveralls -repotoken $COVERALLS_TOKEN
 
 before_deploy:
-  - gox -os "linux darwin" -arch "386 amd64" -output "dist/kage-{{.OS}}_{{.Arch}}_{{.Dir}}" ./cmd/kage/
+  - gox -os "linux darwin" -arch "386 amd64" -output "dist/kage_{{.OS}}_{{.Arch}}" ./cmd/kage/
 
 deploy:
   provider: releases
