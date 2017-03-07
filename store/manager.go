@@ -191,17 +191,14 @@ func (m *MemoryStore) getBrokerOffset(o *kage.PartitionOffset) (int64, int) {
 
 	topic, ok := m.offsets.broker[o.Topic]
 	if !ok {
-		m.offsets.brokerLock.RUnlock()
 		return -1, -1
 	}
 
 	if o.Partition < 0 || o.Partition > int32(len(topic)) {
-		m.offsets.brokerLock.RUnlock()
 		return -1, -1
 	}
 
 	if topic[o.Partition] == nil {
-		m.offsets.brokerLock.RUnlock()
 		return -1, -1
 	}
 

@@ -203,7 +203,7 @@ func (c *Client) getConsumerOffsets() error {
 				continue
 			}
 
-			if _, ok := requests[broker.ID()]; !ok {
+			if _, ok := requests[coordinator.ID()]; !ok {
 				coordinators[coordinator.ID()] = coordinator
 				requests[coordinator.ID()] = &sarama.DescribeGroupsRequest{}
 			}
