@@ -60,6 +60,14 @@ func New() (*MemoryStore, error) {
 	return m, nil
 }
 
+func (m *MemoryStore) AddOffset(o *kage.PartitionOffset) {
+	if o.Group == "" {
+		m.addBrokerOffset(o)
+	} else {
+		m.addConsumerOffset(o)
+	}
+}
+
 func (m *MemoryStore) BrokerOffsets() map[string][]BrokerOffset {
 	m.offsets.brokerLock.RLock()
 	defer m.offsets.brokerLock.RUnlock()

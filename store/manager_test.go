@@ -15,25 +15,21 @@ func TestMemoryStore_ConsumerOffsets(t *testing.T) {
 	}
 	defer memStore.Shutdown()
 
-	memStore.OffsetCh <- &kage.PartitionOffset{
+	memStore.AddOffset(&kage.PartitionOffset{
 		Topic:               "test",
 		Partition:           0,
 		Position:            sarama.OffsetNewest,
 		Offset:              1000,
 		Timestamp:           time.Now().Unix(),
 		TopicPartitionCount: 1,
-	}
-
-	memStore.OffsetCh <- &kage.PartitionOffset{
+	})
+	memStore.AddOffset(&kage.PartitionOffset{
 		Topic:     "test",
 		Partition: 0,
 		Group:     "foo",
 		Offset:    500,
 		Timestamp: time.Now().Unix(),
-	}
-
-	// Wait for processing
-	time.Sleep(1 * time.Second)
+	})
 
 	offsets := memStore.ConsumerOffsets()
 
