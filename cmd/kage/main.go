@@ -92,7 +92,7 @@ func readConfig(path string) (*kage.Config, error) {
 func writeToInflux(memStore *store.MemoryStore, influxDB *influx.Client, log log15.Logger, logMetrics bool) *time.Ticker {
 	reportTicker := time.NewTicker(60 * time.Second)
 	go func() {
-		for _ = range reportTicker.C {
+		for range reportTicker.C {
 			brokerOffsets := memStore.BrokerOffsets()
 			consumerOffsets := memStore.ConsumerOffsets()
 
