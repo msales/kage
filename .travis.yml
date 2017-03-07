@@ -15,8 +15,8 @@ script:
   - make ci
   - $HOME/gopath/bin/goveralls -repotoken $COVERALLS_TOKEN
 
-after_success:
-  - gox -os "linux darwin" -arch "386 amd64" -output "dist/kage-{{.OS}}_{{.Arch}}_{{.Dir}}" ./cmd/stats/
+before_deploy:
+  - gox -os "linux darwin" -arch "386 amd64" -output "dist/kage-{{.OS}}_{{.Arch}}_{{.Dir}}" ./cmd/kage/
 
 deploy:
   provider: releases
