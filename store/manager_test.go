@@ -8,10 +8,61 @@ import (
 	"github.com/msales/kage/kage"
 )
 
+func TestMemoryStore_BrokerOffsets(t *testing.T) {
+	memStore, err := New()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer memStore.Shutdown()
+
+	memStore.AddOffset(&kage.PartitionOffset{
+		Topic:               "test",
+		Partition:           0,
+		Position:            sarama.OffsetOldest,
+		Offset:              0,
+		Timestamp:           time.Now().Unix(),
+		TopicPartitionCount: 1,
+	})
+	memStore.AddOffset(&kage.PartitionOffset{
+		Topic:               "test",
+		Partition:           0,
+		Position:            sarama.OffsetNewest,
+		Offset:              1000,
+		Timestamp:           time.Now().Unix(),
+		TopicPartitionCount: 1,
+	})
+
+	offsets := memStore.BrokerOffsets()
+
+	if _, ok := offsets["test"]; !ok {
+		t.Error("expected topic not found")
+		return
+	}
+
+	if len(offsets["test"]) != 1 {
+		t.Error("expected partition not found")
+		return
+	}
+
+	offset := offsets["test"][0]
+
+	if offset.OldestOffset != 0 {
+		t.Errorf("excpected oldest offset %d; got %d", 0, offset.OldestOffset)
+		return
+	}
+
+	if offset.NewestOffset != 1000 {
+		t.Errorf("excpected newest offset %d; got %d", 1000, offset.NewestOffset)
+		return
+	}
+}
+
 func TestMemoryStore_ConsumerOffsets(t *testing.T) {
 	memStore, err := New()
 	if err != nil {
 		t.Error(err)
+		return
 	}
 	defer memStore.Shutdown()
 
