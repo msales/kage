@@ -77,6 +77,10 @@ func (m *MemoryStore) BrokerOffsets() map[string][]BrokerOffset {
 		snapshot[topic] = make([]BrokerOffset, len(partitions))
 
 		for partition, offset := range partitions {
+			if offset == nil {
+				continue
+			}
+
 			snapshot[topic][partition] = BrokerOffset{
 				OldestOffset: offset.OldestOffset,
 				NewestOffset: offset.NewestOffset,
@@ -100,6 +104,10 @@ func (m *MemoryStore) ConsumerOffsets() map[string]map[string][]kage.ConsumerOff
 			snapshot[group][topic] = make([]kage.ConsumerOffset, len(partitions))
 
 			for partition, offset := range partitions {
+				if offset == nil {
+					continue
+				}
+
 				snapshot[group][topic][partition] = kage.ConsumerOffset{
 					Offset:    offset.Offset,
 					Lag:       offset.Lag,
