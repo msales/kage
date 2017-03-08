@@ -15,6 +15,12 @@ type LogConfig struct {
 
 type KafkaConfig struct {
 	Brokers []string `json:"brokers"`
+	Ignore  KafkaIgnoreConfig `json:"ignore"`
+}
+
+type KafkaIgnoreConfig struct {
+	Topics []string `json:"topics"`
+	Groups []string `json:"groups"`
 }
 
 type InfluxConfig struct {

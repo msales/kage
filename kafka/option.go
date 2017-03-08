@@ -19,6 +19,18 @@ func Brokers(brokers []string) ClientFunc {
 	}
 }
 
+func IgnoreTopics(topics []string) ClientFunc {
+	return func(c *Client) {
+		c.ignoreTopics = topics
+	}
+}
+
+func IgnoreGroups(groups []string) ClientFunc {
+	return func(c *Client) {
+		c.ignoreGroups = groups
+	}
+}
+
 func OffsetChannel(ch chan *kage.PartitionOffset) ClientFunc {
 	return func(c *Client) {
 		c.offsetCh = ch

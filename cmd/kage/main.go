@@ -50,6 +50,8 @@ func main() {
 	kafkaClient, err := kafka.New(
 		kafka.Log(log),
 		kafka.Brokers(config.Kafka.Brokers),
+		kafka.IgnoreTopics(config.Kafka.Ignore.Topics),
+		kafka.IgnoreGroups(config.Kafka.Ignore.Groups),
 		kafka.OffsetChannel(memStore.OffsetCh),
 	)
 	if err != nil {

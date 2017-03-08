@@ -21,6 +21,9 @@ type Client struct {
 	fanInWG            sync.WaitGroup
 	processorWG        sync.WaitGroup
 
+	ignoreTopics []string
+	ignoreGroups []string
+
 	brokerOffsetTicker   *time.Ticker
 	consumerOffsetTicker *time.Ticker
 	offsetCh             chan *kage.PartitionOffset
@@ -115,6 +118,10 @@ func (c *Client) getOffsets() error {
 	brokers := make(map[int32]*sarama.Broker)
 
 	for topic, partitions := range topicMap {
+		if containsString(c.ignoreTopics, topic) {
+			continue
+		}
+
 		for i := 0; i < partitions; i++ {
 			broker, err := c.client.Leader(topic, int32(i))
 			if err != nil {
@@ -197,6 +204,10 @@ func (c *Client) getConsumerOffsets() error {
 		}
 
 		for group := range groups.Groups {
+			if containsString(c.ignoreGroups, group) {
+				continue
+			}
+
 			coordinator, err := c.client.Coordinator(group)
 			if err != nil {
 				c.log.Error(fmt.Sprintf("Cannot fetch co-ordinator for group %s: %v", group, err))
@@ -283,4 +294,14 @@ func (c *Client) getConsumerOffsets() error {
 	wg.Wait()
 
 	return nil
+}
+
+func containsString(a []string, b string) bool {
+	for _, s := range a {
+		if s == b {
+			return true
+		}
+	}
+
+	return false
 }
