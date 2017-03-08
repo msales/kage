@@ -13,3 +13,7 @@ test: build
 
 vet:
 	go vet $(shell go list ./... | grep -v /vendor/)
+
+bump:
+	pip install --upgrade bumpversion
+	bumpversion patch
