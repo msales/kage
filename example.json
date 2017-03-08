@@ -18,6 +18,7 @@
     "username": "",
     "password": "",
     "database": "metrics",
+    "metric": "kafka",
     "tags": {
       "cluster": "local",
       "environment": "local"

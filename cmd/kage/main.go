@@ -67,7 +67,7 @@ func main() {
 		panic(err)
 	}
 
-	reportTicker := writeToInflux(memStore, influxDB, log, config.LogMetrics)
+	reportTicker := writeToInflux(memStore, influxDB, log, config.Influx.Metric, config.LogMetrics)
 
 	quit := listenForSignals()
 	<-quit
@@ -91,7 +91,7 @@ func readConfig(path string) (*kage.Config, error) {
 }
 
 // Write metrics from the MemoryStore to InfluxDB
-func writeToInflux(memStore *store.MemoryStore, influxDB *influx.Client, log log15.Logger, logMetrics bool) *time.Ticker {
+func writeToInflux(memStore *store.MemoryStore, influxDB *influx.Client, log log15.Logger, metric string, logMetrics bool) *time.Ticker {
 	reportTicker := time.NewTicker(60 * time.Second)
 	go func() {
 		for range reportTicker.C {
@@ -102,7 +102,7 @@ func writeToInflux(memStore *store.MemoryStore, influxDB *influx.Client, log log
 			for topic, partitions := range brokerOffsets {
 				for partition, offset := range partitions {
 					pt := &influx.Point{
-						Measurement: "kafka",
+						Measurement: metric,
 						Tags: map[string]string{
 							"type":      "BrokerOffset",
 							"topic":     topic,
@@ -134,7 +134,7 @@ func writeToInflux(memStore *store.MemoryStore, influxDB *influx.Client, log log
 				for topic, partitions := range topics {
 					for partition, offset := range partitions {
 						pt := &influx.Point{
-							Measurement: "kafka",
+							Measurement: metric,
 							Tags: map[string]string{
 								"type":      "ConsumerOffset",
 								"group":     group,

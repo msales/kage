@@ -19,7 +19,7 @@ type Client struct {
 	password string
 	database string
 
-	tags map[string]string
+	tags   map[string]string
 
 	client client.Client
 }
