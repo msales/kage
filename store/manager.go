@@ -15,17 +15,11 @@ type MemoryStore struct {
 }
 
 type ClusterOffsets struct {
-	broker     map[string][]*BrokerOffset
+	broker     kage.BrokerOffsets
 	brokerLock sync.RWMutex
 
-	consumer     map[string]map[string][]*kage.ConsumerOffset
+	consumer     kage.ConsumerOffsets
 	consumerLock sync.RWMutex
-}
-
-type BrokerOffset struct {
-	OldestOffset int64
-	NewestOffset int64
-	Timestamp    int64
 }
 
 func New() (*MemoryStore, error) {
@@ -36,7 +30,7 @@ func New() (*MemoryStore, error) {
 
 	// Initialise the cluster offsets
 	m.offsets = &ClusterOffsets{
-		broker:   make(map[string][]*BrokerOffset),
+		broker:   make(map[string][]*kage.BrokerOffset),
 		consumer: make(map[string]map[string][]*kage.ConsumerOffset),
 	}
 
@@ -68,20 +62,20 @@ func (m *MemoryStore) AddOffset(o *kage.PartitionOffset) {
 	}
 }
 
-func (m *MemoryStore) BrokerOffsets() map[string][]BrokerOffset {
+func (m *MemoryStore) BrokerOffsets() kage.BrokerOffsets {
 	m.offsets.brokerLock.RLock()
 	defer m.offsets.brokerLock.RUnlock()
 
-	snapshot := make(map[string][]BrokerOffset)
+	snapshot := make(kage.BrokerOffsets)
 	for topic, partitions := range m.offsets.broker {
-		snapshot[topic] = make([]BrokerOffset, len(partitions))
+		snapshot[topic] = make([]*kage.BrokerOffset, len(partitions))
 
 		for partition, offset := range partitions {
 			if offset == nil {
 				continue
 			}
 
-			snapshot[topic][partition] = BrokerOffset{
+			snapshot[topic][partition] = &kage.BrokerOffset{
 				OldestOffset: offset.OldestOffset,
 				NewestOffset: offset.NewestOffset,
 				Timestamp:    offset.Timestamp,
@@ -92,23 +86,23 @@ func (m *MemoryStore) BrokerOffsets() map[string][]BrokerOffset {
 	return snapshot
 }
 
-func (m *MemoryStore) ConsumerOffsets() map[string]map[string][]kage.ConsumerOffset {
+func (m *MemoryStore) ConsumerOffsets() kage.ConsumerOffsets {
 	m.offsets.consumerLock.RLock()
 	defer m.offsets.consumerLock.RUnlock()
 
-	snapshot := make(map[string]map[string][]kage.ConsumerOffset)
+	snapshot := make(kage.ConsumerOffsets)
 	for group, topics := range m.offsets.consumer {
-		snapshot[group] = make(map[string][]kage.ConsumerOffset)
+		snapshot[group] = make(map[string][]*kage.ConsumerOffset)
 
 		for topic, partitions := range topics {
-			snapshot[group][topic] = make([]kage.ConsumerOffset, len(partitions))
+			snapshot[group][topic] = make([]*kage.ConsumerOffset, len(partitions))
 
 			for partition, offset := range partitions {
 				if offset == nil {
 					continue
 				}
 
-				snapshot[group][topic][partition] = kage.ConsumerOffset{
+				snapshot[group][topic][partition] = &kage.ConsumerOffset{
 					Offset:    offset.Offset,
 					Lag:       offset.Lag,
 					Timestamp: offset.Timestamp,
@@ -130,7 +124,7 @@ func (m *MemoryStore) addBrokerOffset(o *kage.PartitionOffset) {
 
 	topic, ok := m.offsets.broker[o.Topic]
 	if !ok {
-		topic = make([]*BrokerOffset, o.TopicPartitionCount)
+		topic = make([]*kage.BrokerOffset, o.TopicPartitionCount)
 		m.offsets.broker[o.Topic] = topic
 	}
 
@@ -142,7 +136,7 @@ func (m *MemoryStore) addBrokerOffset(o *kage.PartitionOffset) {
 
 	partition := topic[o.Partition]
 	if partition == nil {
-		partition = &BrokerOffset{}
+		partition = &kage.BrokerOffset{}
 		topic[o.Partition] = partition
 	}
 
