@@ -8,6 +8,7 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/inconshreveable/log15"
 	"github.com/msales/kage/kage"
+	"github.com/ryanuber/go-glob"
 )
 
 type Client struct {
@@ -296,9 +297,9 @@ func (c *Client) getConsumerOffsets() error {
 	return nil
 }
 
-func containsString(a []string, b string) bool {
-	for _, s := range a {
-		if s == b {
+func containsString(patterns []string, subject string) bool {
+	for _, pattern := range patterns {
+		if glob.Glob(pattern, subject) {
 			return true
 		}
 	}

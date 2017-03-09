@@ -160,6 +160,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/ryanuber/go-glob",
+			"repository": "https://github.com/ryanuber/go-glob",
+			"vcs": "git",
+			"revision": "256dc444b735e061061cf46c809487313d5b0065",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/stathat/go",
 			"repository": "https://github.com/stathat/go",
 			"vcs": "git",
