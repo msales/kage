@@ -15,30 +15,20 @@ import (
 type Client struct {
 	brokers []string
 
-	client             sarama.Client
-	messageCh          chan *sarama.ConsumerMessage
-	errorCh            chan *sarama.ConsumerError
-	fanInWG            sync.WaitGroup
-	processorWG        sync.WaitGroup
-
-	ignoreTopics []string
-	ignoreGroups []string
-
+	client               sarama.Client
 	brokerOffsetTicker   *time.Ticker
 	consumerOffsetTicker *time.Ticker
 	offsetCh             chan *kage.PartitionOffset
+
+	ignoreTopics []string
+	ignoreGroups []string
 
 	log log15.Logger
 }
 
 // New creates and returns a bew Client for a Kafka cluster.
 func New(opts ...ClientFunc) (*Client, error) {
-	client := &Client{
-		messageCh:   make(chan *sarama.ConsumerMessage),
-		errorCh:     make(chan *sarama.ConsumerError),
-		fanInWG:     sync.WaitGroup{},
-		processorWG: sync.WaitGroup{},
-	}
+	client := &Client{}
 
 	for _, o := range opts {
 		o(client)
@@ -77,8 +67,8 @@ func New(opts ...ClientFunc) (*Client, error) {
 // Check the health of the Kafka connection.
 func (c *Client) IsHealthy() bool {
 	for _, b := range c.client.Brokers() {
-		if conn, err := b.Connected(); !conn && err != nil {
-			c.log.Error(err.Error());
+		if ok, err := b.Connected(); !ok && err != nil {
+			c.log.Crit(err.Error());
 			return false
 		}
 	}
@@ -88,12 +78,6 @@ func (c *Client) IsHealthy() bool {
 
 // Shutdown shuts down the Client.
 func (c *Client) Shutdown() {
-	// Stop the partition consumer
-	c.fanInWG.Wait()
-	close(c.errorCh)
-	close(c.messageCh)
-	c.processorWG.Wait()
-
 	// Stop the offset ticker
 	c.brokerOffsetTicker.Stop()
 	c.consumerOffsetTicker.Stop()
@@ -201,6 +185,12 @@ func (c *Client) getConsumerOffsets() error {
 
 	brokers := c.client.Brokers()
 	for _, broker := range brokers {
+		if ok, err := broker.Connected(); !ok && err != nil {
+			c.log.Error(fmt.Sprintf("Failed to connect to broker broker %v: %v", broker.ID(), err))
+
+			continue
+		}
+
 		groups, err := broker.ListGroups(&sarama.ListGroupsRequest{})
 		if err != nil {
 			c.log.Error(fmt.Sprintf("Cannot fetch consumer groups on broker %v: %v", broker.ID(), err))
