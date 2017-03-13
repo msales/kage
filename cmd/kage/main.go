@@ -12,6 +12,7 @@ import (
 	"github.com/msales/kage/kafka"
 	"github.com/msales/kage/kage"
 	"github.com/msales/kage/reporter"
+	"github.com/msales/kage/server"
 	"github.com/msales/kage/store"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -24,6 +25,7 @@ func main() {
 	kingpin.Version(Version)
 	kingpin.Parse()
 
+	// Config
 	config, err := readConfig(*configPath)
 	if err != nil {
 		panic(err)
@@ -34,6 +36,7 @@ func main() {
 		panic(err)
 	}
 
+	// Logger
 	log := log15.New()
 	log.SetHandler(log15.StreamHandler(os.Stderr, log15.LogfmtFormat()))
 	log.SetHandler(log15.LvlFilterHandler(
@@ -41,11 +44,14 @@ func main() {
 		log15.Must.FileHandler(config.Log.Path, log15.LogfmtFormat()),
 	))
 
+	// Store
 	memStore, err := store.New()
 	if err != nil {
 		panic(err)
 	}
+	defer memStore.Shutdown()
 
+	// Kafka
 	kafkaClient, err := kafka.New(
 		kafka.Log(log),
 		kafka.Brokers(config.Kafka.Brokers),
@@ -56,13 +62,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer kafkaClient.Shutdown()
 
+	// Reporters
 	reporters, err := createReporters(config.Reporters, log)
 	if err != nil {
 		panic(err)
 	}
-
 	reportTicker := time.NewTicker(60 * time.Second)
+	defer reportTicker.Stop()
 	go func() {
 		for range reportTicker.C {
 			brokerOffsets := memStore.BrokerOffsets()
@@ -73,12 +81,24 @@ func main() {
 		}
 	}()
 
+	// Server
+	services := []server.Service{kafkaClient}
+	for _, r := range *reporters {
+		services = append(services, r)
+	}
+	srv := server.New(
+		config.Server.Address,
+		services,
+		log,
+	)
+	if err := srv.Start(); err != nil {
+		panic(err)
+	}
+	defer srv.Shutdown()
+
+	// Wait for quit
 	quit := listenForSignals()
 	<-quit
-
-	reportTicker.Stop()
-	kafkaClient.Shutdown()
-	memStore.Shutdown()
 }
 
 // readConfig reads the configuration from the given path

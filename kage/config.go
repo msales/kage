@@ -6,8 +6,9 @@ type Config struct {
 	Log        LogConfig `json:"log"`
 	LogMetrics bool      `json:"log-metrics"`
 
-	Kafka     KafkaConfig  `json:"kafka"`
-	Reporters Reporters `json:"reporters"`
+	Kafka     KafkaConfig   `json:"kafka"`
+	Reporters Reporters     `json:"reporters"`
+	Server    ServerConfig  `json:"server"`
 }
 
 type LogConfig struct {
@@ -23,6 +24,10 @@ type KafkaConfig struct {
 type KafkaIgnoreConfig struct {
 	Topics []string `json:"topics"`
 	Groups []string `json:"groups"`
+}
+
+type ServerConfig struct {
+	Address string `json:"address"`
 }
 
 type Reporters map[string]json.RawMessage
