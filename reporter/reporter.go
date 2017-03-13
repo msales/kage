@@ -5,7 +5,7 @@ import "github.com/msales/kage/kage"
 type Reporters map[string]Reporter
 
 func (rs *Reporters) Add(key string, r Reporter) {
-	rs[key] = r
+	(*rs)[key] = r
 }
 
 func (rs *Reporters) ReportBrokerOffsets(o *kage.BrokerOffsets) {
@@ -24,4 +24,6 @@ type Reporter interface {
 	ReportBrokerOffsets(o *kage.BrokerOffsets)
 
 	ReportConsumerOffsets(o *kage.ConsumerOffsets)
+
+	IsHealthy() bool
 }
