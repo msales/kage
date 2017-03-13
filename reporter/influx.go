@@ -6,9 +6,7 @@ import (
 
 	"github.com/inconshreveable/log15"
 	"github.com/influxdata/influxdb/client/v2"
-	"github.com/msales/kage/influx"
 	"github.com/msales/kage/kage"
-	"log"
 )
 
 type InfluxReporterFunc func(c *InfluxReporter)

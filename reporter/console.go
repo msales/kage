@@ -6,9 +6,7 @@ import (
 	"github.com/msales/kage/kage"
 )
 
-type ConsoleReporter struct {
-
-}
+type ConsoleReporter struct {}
 
 func NewConsoleReporter() (*ConsoleReporter, error) {
 	return &ConsoleReporter{}, nil
@@ -18,7 +16,7 @@ func (r ConsoleReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 	for topic, partitions := range *o {
 		for partition, offset := range partitions {
 			fmt.Printf(
-				"%s:%s oldest:%d newest:%d available:%d \n",
+				"%s:%d oldest:%d newest:%d available:%d \n",
 				topic,
 				partition,
 				offset.OldestOffset,
@@ -34,7 +32,7 @@ func (r ConsoleReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 		for topic, partitions := range topics {
 			for partition, offset := range partitions {
 				fmt.Printf(
-					"%s %s:%s offset:%d lag:%d \n",
+					"%s %s:%d offset:%d lag:%d \n",
 					group,
 					topic,
 					partition,
