@@ -5,11 +5,13 @@ import (
 
 	"github.com/Shopify/sarama"
 	"github.com/msales/kage/kage"
+	"time"
 )
 
 type MemoryStore struct {
-	offsets  *ClusterOffsets
-	shutdown chan struct{}
+	offsets       *ClusterOffsets
+	cleanupTicker *time.Ticker
+	shutdown      chan struct{}
 
 	OffsetCh chan *kage.PartitionOffset
 }
@@ -48,6 +50,14 @@ func New() (*MemoryStore, error) {
 			case <-m.shutdown:
 				return
 			}
+		}
+	}()
+
+	// Start cleanup task
+	m.cleanupTicker = time.NewTicker(1 * time.Hour)
+	go func() {
+		for range m.cleanupTicker.C {
+			m.cleanConsumerOffsets()
 		}
 	}()
 
@@ -115,6 +125,7 @@ func (m *MemoryStore) ConsumerOffsets() kage.ConsumerOffsets {
 }
 
 func (m *MemoryStore) Shutdown() {
+	m.cleanupTicker.Stop()
 	close(m.shutdown)
 }
 
@@ -213,4 +224,31 @@ func (m *MemoryStore) getBrokerOffset(o *kage.PartitionOffset) (int64, int) {
 	}
 
 	return topic[o.Partition].NewestOffset, len(topic)
+}
+
+func (m *MemoryStore) cleanConsumerOffsets() {
+	m.offsets.consumerLock.Lock()
+	defer m.offsets.consumerLock.Unlock()
+
+	ts := time.Now().Unix() * 1000
+	for group, topics := range m.offsets.consumer {
+		for topic, partitions := range topics {
+			maxDuration := int64(0)
+
+			for _, offset := range partitions {
+				duration := ts - offset.Timestamp
+				if duration > maxDuration {
+					maxDuration = duration
+				}
+			}
+
+			if maxDuration > (24 * int64(time.Hour.Seconds()) * 1000) {
+				delete(m.offsets.consumer[group], topic)
+			}
+		}
+
+		if len(m.offsets.consumer[group]) == 0 {
+			delete(m.offsets.consumer, group)
+		}
+	}
 }
