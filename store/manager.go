@@ -57,7 +57,7 @@ func New() (*MemoryStore, error) {
 	m.cleanupTicker = time.NewTicker(1 * time.Hour)
 	go func() {
 		for range m.cleanupTicker.C {
-			m.cleanConsumerOffsets()
+			m.CleanConsumerOffsets()
 		}
 	}()
 
@@ -226,7 +226,7 @@ func (m *MemoryStore) getBrokerOffset(o *kage.PartitionOffset) (int64, int) {
 	return topic[o.Partition].NewestOffset, len(topic)
 }
 
-func (m *MemoryStore) cleanConsumerOffsets() {
+func (m *MemoryStore) CleanConsumerOffsets() {
 	m.offsets.consumerLock.Lock()
 	defer m.offsets.consumerLock.Unlock()
 
