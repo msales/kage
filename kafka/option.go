@@ -1,8 +1,8 @@
 package kafka
 
 import (
-	"github.com/inconshreveable/log15"
 	"github.com/msales/kage/kage"
+	"github.com/tendermint/log15"
 )
 
 type ClientFunc func(c *Client)

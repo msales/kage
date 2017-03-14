@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/inconshreveable/log15"
 	"github.com/influxdata/influxdb/client/v2"
 	"github.com/msales/kage/kage"
+	"github.com/tendermint/log15"
 )
 
 // InfluxReporterFunc represents a configuration function for InfluxReporter.

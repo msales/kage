@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/inconshreveable/log15"
 	"github.com/msales/kage/kage"
 	"github.com/ryanuber/go-glob"
+	"github.com/tendermint/log15"
 )
 
 // Client represents a Kafka cluster connection.

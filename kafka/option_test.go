@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/inconshreveable/log15"
 	"github.com/msales/kage/kage"
+	"github.com/tendermint/log15"
 )
 
 func TestBrokers(t *testing.T) {

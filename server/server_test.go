@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/inconshreveable/log15"
 	"github.com/msales/kage/testutil/mocks"
+	"github.com/tendermint/log15"
 )
 
 func TestServer_HealthPass(t *testing.T) {

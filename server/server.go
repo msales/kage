@@ -4,7 +4,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/inconshreveable/log15"
+	"github.com/tendermint/log15"
 )
 
 // Service represents a service with health checks.
