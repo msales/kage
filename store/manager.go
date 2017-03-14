@@ -197,7 +197,7 @@ func (m *MemoryStore) addConsumerOffset(o *kage.PartitionOffset) {
 	}
 
 	lag := brokerOffset - o.Offset
-	if lag < 0 {
+	if lag < 0 || o.Offset == 0 {
 		lag = 0
 	}
 
