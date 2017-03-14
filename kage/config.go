@@ -1,11 +1,14 @@
 package kage
 
+import "encoding/json"
+
 type Config struct {
 	Log        LogConfig `json:"log"`
 	LogMetrics bool      `json:"log-metrics"`
 
-	Kafka  KafkaConfig  `json:"kafka"`
-	Influx InfluxConfig `json:"influx"`
+	Kafka     KafkaConfig   `json:"kafka"`
+	Reporters Reporters     `json:"reporters"`
+	Server    ServerConfig  `json:"server"`
 }
 
 type LogConfig struct {
@@ -23,7 +26,13 @@ type KafkaIgnoreConfig struct {
 	Groups []string `json:"groups"`
 }
 
-type InfluxConfig struct {
+type ServerConfig struct {
+	Address string `json:"address"`
+}
+
+type Reporters map[string]json.RawMessage
+
+type InfluxReporterConfig struct {
 	Address  string            `json:"address"`
 	Username string            `json:"username"`
 	Password string            `json:"password"`

@@ -10,6 +10,16 @@ type PartitionOffset struct {
 	TopicPartitionCount int
 }
 
+type BrokerOffsets map[string][]*BrokerOffset;
+
+type BrokerOffset struct {
+	OldestOffset int64
+	NewestOffset int64
+	Timestamp    int64
+}
+
+type ConsumerOffsets map[string]map[string][]*ConsumerOffset
+
 type ConsumerOffset struct {
 	Offset    int64
 	Timestamp int64

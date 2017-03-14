@@ -11,34 +11,24 @@ import (
 	"github.com/ryanuber/go-glob"
 )
 
+// Client represents a Kafka cluster connection.
 type Client struct {
 	brokers []string
 
-	client             sarama.Client
-	masterConsumer     sarama.Consumer
-	partitionConsumers []sarama.PartitionConsumer
-	messageCh          chan *sarama.ConsumerMessage
-	errorCh            chan *sarama.ConsumerError
-	fanInWG            sync.WaitGroup
-	processorWG        sync.WaitGroup
-
-	ignoreTopics []string
-	ignoreGroups []string
-
+	client               sarama.Client
 	brokerOffsetTicker   *time.Ticker
 	consumerOffsetTicker *time.Ticker
 	offsetCh             chan *kage.PartitionOffset
 
+	ignoreTopics []string
+	ignoreGroups []string
+
 	log log15.Logger
 }
 
+// New creates and returns a bew Client for a Kafka cluster.
 func New(opts ...ClientFunc) (*Client, error) {
-	client := &Client{
-		messageCh:   make(chan *sarama.ConsumerMessage),
-		errorCh:     make(chan *sarama.ConsumerError),
-		fanInWG:     sync.WaitGroup{},
-		processorWG: sync.WaitGroup{},
-	}
+	client := &Client{}
 
 	for _, o := range opts {
 		o(client)
@@ -52,15 +42,6 @@ func New(opts ...ClientFunc) (*Client, error) {
 		return nil, err
 	}
 	client.client = kafka
-
-	// Create sarama master consumer
-	consumer, err := sarama.NewConsumerFromClient(kafka)
-	if err != nil {
-		kafka.Close()
-
-		return nil, err
-	}
-	client.masterConsumer = consumer
 
 	// Get the offsets for all topics
 	client.getOffsets()
@@ -83,22 +64,26 @@ func New(opts ...ClientFunc) (*Client, error) {
 	return client, nil
 }
 
-func (c *Client) Shutdown() {
-	for _, consumer := range c.partitionConsumers {
-		consumer.AsyncClose()
+// Check the health of the Kafka connection.
+func (c *Client) IsHealthy() bool {
+	for _, b := range c.client.Brokers() {
+		if ok, err := b.Connected(); !ok && err != nil {
+			c.log.Crit(err.Error());
+			return false
+		}
 	}
 
-	// Stop the partition consumer
-	c.fanInWG.Wait()
-	close(c.errorCh)
-	close(c.messageCh)
-	c.processorWG.Wait()
+	return true
+}
 
+// Shutdown shuts down the Client.
+func (c *Client) Shutdown() {
 	// Stop the offset ticker
 	c.brokerOffsetTicker.Stop()
 	c.consumerOffsetTicker.Stop()
 }
 
+// getTopics gets the topics for the cluster.
 func (c *Client) getTopics() map[string]int {
 	topics, _ := c.client.Topics()
 
@@ -112,6 +97,7 @@ func (c *Client) getTopics() map[string]int {
 	return topicMap
 }
 
+// getOffsets gets all topic offsets and sends them to the offset manager.
 func (c *Client) getOffsets() error {
 	topicMap := c.getTopics()
 
@@ -192,12 +178,25 @@ func (c *Client) getOffsets() error {
 	return nil
 }
 
+// getConsumerOffsets gets all the consumer offsets and send them to the offset manager.
 func (c *Client) getConsumerOffsets() error {
 	requests := make(map[int32]*sarama.DescribeGroupsRequest)
 	coordinators := make(map[int32]*sarama.Broker)
 
 	brokers := c.client.Brokers()
 	for _, broker := range brokers {
+		if ok, err := broker.Connected(); !ok {
+			if err != nil {
+				c.log.Error(fmt.Sprintf("Failed to connect to broker broker %v: %v", broker.ID(), err))
+				continue
+			}
+			
+			if err := broker.Open(c.client.Config()); err != nil {
+				c.log.Error(fmt.Sprintf("Failed to connect to broker broker %v: %v", broker.ID(), err))
+				continue
+			}
+		}
+
 		groups, err := broker.ListGroups(&sarama.ListGroupsRequest{})
 		if err != nil {
 			c.log.Error(fmt.Sprintf("Cannot fetch consumer groups on broker %v: %v", broker.ID(), err))
@@ -297,6 +296,7 @@ func (c *Client) getConsumerOffsets() error {
 	return nil
 }
 
+// containsString determines if the string matches any of the provided patterns.
 func containsString(patterns []string, subject string) bool {
 	for _, pattern := range patterns {
 		if glob.Glob(pattern, subject) {

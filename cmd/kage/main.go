@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/signal"
@@ -10,9 +9,10 @@ import (
 	"time"
 
 	"github.com/inconshreveable/log15"
-	"github.com/msales/kage/influx"
 	"github.com/msales/kage/kafka"
 	"github.com/msales/kage/kage"
+	"github.com/msales/kage/reporter"
+	"github.com/msales/kage/server"
 	"github.com/msales/kage/store"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -25,6 +25,7 @@ func main() {
 	kingpin.Version(Version)
 	kingpin.Parse()
 
+	// Config
 	config, err := readConfig(*configPath)
 	if err != nil {
 		panic(err)
@@ -35,6 +36,7 @@ func main() {
 		panic(err)
 	}
 
+	// Logger
 	log := log15.New()
 	log.SetHandler(log15.StreamHandler(os.Stderr, log15.LogfmtFormat()))
 	log.SetHandler(log15.LvlFilterHandler(
@@ -42,11 +44,14 @@ func main() {
 		log15.Must.FileHandler(config.Log.Path, log15.LogfmtFormat()),
 	))
 
+	// Store
 	memStore, err := store.New()
 	if err != nil {
 		panic(err)
 	}
+	defer memStore.Shutdown()
 
+	// Kafka
 	kafkaClient, err := kafka.New(
 		kafka.Log(log),
 		kafka.Brokers(config.Kafka.Brokers),
@@ -57,27 +62,46 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer kafkaClient.Shutdown()
 
-	influxDB, err := influx.New(
-		influx.Credentials(config.Influx.Address, config.Influx.Username, config.Influx.Password),
-		influx.Database(config.Influx.Database),
-		influx.Tags(config.Influx.Tags),
-	)
+	// Reporters
+	reporters, err := createReporters(config.Reporters, log)
 	if err != nil {
 		panic(err)
 	}
+	reportTicker := time.NewTicker(60 * time.Second)
+	defer reportTicker.Stop()
+	go func() {
+		for range reportTicker.C {
+			brokerOffsets := memStore.BrokerOffsets()
+			reporters.ReportBrokerOffsets(&brokerOffsets)
 
-	reportTicker := writeToInflux(memStore, influxDB, log, config.Influx.Metric, config.LogMetrics)
+			consumerOffsets := memStore.ConsumerOffsets()
+			reporters.ReportConsumerOffsets(&consumerOffsets)
+		}
+	}()
 
+	// Server
+	services := []server.Service{kafkaClient}
+	for _, r := range *reporters {
+		services = append(services, r)
+	}
+	srv := server.New(
+		config.Server.Address,
+		services,
+		log,
+	)
+	if err := srv.Start(); err != nil {
+		panic(err)
+	}
+	defer srv.Shutdown()
+
+	// Wait for quit
 	quit := listenForSignals()
 	<-quit
-
-	reportTicker.Stop()
-	kafkaClient.Shutdown()
-	memStore.Shutdown()
 }
 
-// Read the configuration from the given path
+// readConfig reads the configuration from the given path
 func readConfig(path string) (*kage.Config, error) {
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -90,86 +114,41 @@ func readConfig(path string) (*kage.Config, error) {
 	return config, nil
 }
 
-// Write metrics from the MemoryStore to InfluxDB
-func writeToInflux(memStore *store.MemoryStore, influxDB *influx.Client, log log15.Logger, metric string, logMetrics bool) *time.Ticker {
-	reportTicker := time.NewTicker(60 * time.Second)
-	go func() {
-		for range reportTicker.C {
-			brokerOffsets := memStore.BrokerOffsets()
-			consumerOffsets := memStore.ConsumerOffsets()
+// createReporters creates reporters from the config
+func createReporters(reporters kage.Reporters, logger log15.Logger) (*reporter.Reporters, error) {
+	rs := &reporter.Reporters{}
 
-			pts := []*influx.Point{}
-			for topic, partitions := range brokerOffsets {
-				for partition, offset := range partitions {
-					pt := &influx.Point{
-						Measurement: metric,
-						Tags: map[string]string{
-							"type":      "BrokerOffset",
-							"topic":     topic,
-							"partition": fmt.Sprint(partition),
-						},
-						Fields: map[string]interface{}{
-							"oldest":    offset.OldestOffset,
-							"newest":    offset.NewestOffset,
-							"available": offset.NewestOffset - offset.OldestOffset,
-						},
-						Time: time.Now(),
-					}
+	for t, config := range reporters {
+		switch t {
+		case "influx":
+			influxConfig := kage.InfluxReporterConfig{}
+			json.Unmarshal(config, &influxConfig)
 
-					pts = append(pts, pt)
-
-					if logMetrics {
-						log.Info("broker",
-							"topic", topic,
-							"partition", partition,
-							"oldest", offset.OldestOffset,
-							"newest", offset.NewestOffset,
-							"available", offset.NewestOffset-offset.OldestOffset,
-						)
-					}
-				}
+			r, err := reporter.NewInfluxReporter(
+				reporter.Credentials(influxConfig.Address, influxConfig.Username, influxConfig.Password),
+				reporter.Database(influxConfig.Database),
+				reporter.Metric(influxConfig.Metric),
+				reporter.Tags(influxConfig.Tags),
+				reporter.Log(logger),
+			)
+			if err != nil {
+				return nil, err
 			}
 
-			for group, topics := range consumerOffsets {
-				for topic, partitions := range topics {
-					for partition, offset := range partitions {
-						pt := &influx.Point{
-							Measurement: metric,
-							Tags: map[string]string{
-								"type":      "ConsumerOffset",
-								"group":     group,
-								"topic":     topic,
-								"partition": fmt.Sprint(partition),
-							},
-							Fields: map[string]interface{}{
-								"offset": offset.Offset,
-								"lag":    offset.Lag,
-							},
-							Time: time.Now(),
-						}
+			rs.Add(t, r)
+			break
 
-						pts = append(pts, pt)
-
-						if logMetrics {
-							log.Info("consumer",
-								"group", group,
-								"topic", topic,
-								"partition", partition,
-								"offset", offset.Offset,
-								"lag", offset.Lag,
-							)
-						}
-					}
-				}
+		case "console":
+			r, err := reporter.NewConsoleReporter()
+			if err != nil {
+				return nil, err
 			}
 
-			if err := influxDB.Write(pts); err != nil {
-				log.Error(err.Error())
-			}
+			rs.Add(t, r)
 		}
-	}()
+	}
 
-	return reportTicker
+	return rs, nil
 }
 
 // Wait for SIGTERM to end the application.

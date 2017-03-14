@@ -105,3 +105,82 @@ func TestMemoryStore_ConsumerOffsets(t *testing.T) {
 		t.Errorf("excpected lag %d; got %d", 500, offset.Lag)
 	}
 }
+
+func TestMemoryStore_ConsumerOffsetsZeroOffset(t *testing.T) {
+	memStore, err := New()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer memStore.Shutdown()
+
+	memStore.AddOffset(&kage.PartitionOffset{
+		Topic:               "test",
+		Partition:           0,
+		Position:            sarama.OffsetNewest,
+		Offset:              1000,
+		Timestamp:           time.Now().Unix(),
+		TopicPartitionCount: 1,
+	})
+	memStore.AddOffset(&kage.PartitionOffset{
+		Topic:     "test",
+		Partition: 0,
+		Group:     "foo",
+		Offset:    0,
+		Timestamp: time.Now().Unix(),
+	})
+
+	offsets := memStore.ConsumerOffsets()
+
+	if _, ok := offsets["foo"]; !ok {
+		t.Error("expected group not found")
+		return
+	}
+
+	if _, ok := offsets["foo"]["test"]; !ok {
+		t.Error("expected topic not found")
+		return
+	}
+
+	if len(offsets["foo"]["test"]) != 1 {
+		t.Error("expected partition not found")
+		return
+	}
+
+	offset := offsets["foo"]["test"][0]
+
+	if offset.Lag != 0 {
+		t.Errorf("excpected lag %d; got %d", 0, offset.Lag)
+	}
+}
+
+func TestMemoryStore_CleanConsumerOffsets(t *testing.T) {
+	memStore, err := New()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer memStore.Shutdown()
+
+	memStore.AddOffset(&kage.PartitionOffset{
+		Topic:               "test",
+		Partition:           0,
+		Position:            sarama.OffsetNewest,
+		Offset:              1000,
+		Timestamp:           time.Now().Unix(),
+		TopicPartitionCount: 1,
+	})
+	memStore.AddOffset(&kage.PartitionOffset{
+		Topic:     "test",
+		Partition: 0,
+		Group:     "foo",
+		Offset:    500,
+		Timestamp: time.Now().Unix() * 1000 - (25 * int64(time.Hour.Seconds()) * 1000),
+	})
+
+	memStore.CleanConsumerOffsets()
+
+	if len(memStore.offsets.consumer) > 0 {
+		t.Fatal("expected group to be cleaned; still exists")
+	}
+}
