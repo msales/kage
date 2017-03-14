@@ -9,8 +9,10 @@ import (
 	"github.com/msales/kage/kage"
 )
 
+// InfluxReporterFunc represents a configuration function for InfluxReporter.
 type InfluxReporterFunc func(c *InfluxReporter)
 
+// Credentials configures the credentials on an InfluxReporter.
 func Credentials(addr, username, password string) InfluxReporterFunc {
 	return func(c *InfluxReporter) {
 		c.addr = addr
@@ -19,32 +21,35 @@ func Credentials(addr, username, password string) InfluxReporterFunc {
 	}
 }
 
+// Database configures the database on an InfluxReporter.
 func Database(database string) InfluxReporterFunc {
 	return func(c *InfluxReporter) {
 		c.database = database
 	}
 }
 
-// Log sets the logger on the InfluxReporter.
+// Log configures the logger on an InfluxReporter.
 func Log(log log15.Logger) InfluxReporterFunc {
 	return func(c *InfluxReporter) {
 		c.log = log
 	}
 }
 
-// Metric sets the metric name on the InfluxReporter.
+// Metric configures the metric name on an InfluxReporter.
 func Metric(metric string) InfluxReporterFunc {
 	return func(c *InfluxReporter) {
 		c.metric = metric
 	}
 }
 
+// Tags configures the additional tags on an InfluxReporter.
 func Tags(tags map[string]string) InfluxReporterFunc {
 	return func(c *InfluxReporter) {
 		c.tags = tags
 	}
 }
 
+// InfluxReporter represents an InfluxDB reporter.
 type InfluxReporter struct {
 	addr     string
 	username string
@@ -59,6 +64,7 @@ type InfluxReporter struct {
 	log log15.Logger
 }
 
+// NewInfluxReporter creates and returns a new NewInfluxReporter.
 func NewInfluxReporter(opts ...InfluxReporterFunc) (*InfluxReporter, error) {
 	r := &InfluxReporter{}
 
@@ -79,6 +85,7 @@ func NewInfluxReporter(opts ...InfluxReporterFunc) (*InfluxReporter, error) {
 	return r, nil
 }
 
+// ReportBrokerOffsets reports a snapshot of the broker offsets.
 func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 	pts, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  r.database,
@@ -127,6 +134,7 @@ func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 	}
 }
 
+// ReportConsumerOffsets reports a snapshot of the consumer group offsets.
 func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 	pts, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  r.database,
@@ -177,6 +185,7 @@ func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 	}
 }
 
+// IsHealthy checks the health of the InfluxReporter.
 func (r InfluxReporter) IsHealthy() bool {
 	_, _, err := r.client.Ping(100)
 

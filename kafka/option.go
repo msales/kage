@@ -7,35 +7,35 @@ import (
 
 type ClientFunc func(c *Client)
 
-// Log sets the logger on the Client.
+// Log configures the logger on the Client.
 func Log(log log15.Logger) ClientFunc {
 	return func(c *Client) {
 		c.log = log
 	}
 }
 
-// Brokers set the brokers on the Client.
+// Brokers configures the brokers on the Client.
 func Brokers(brokers []string) ClientFunc {
 	return func(c *Client) {
 		c.brokers = brokers
 	}
 }
 
-// IgnoreTopics sets the topic patterns to be ignored on the Client.
+// IgnoreTopics configures the topic patterns to be ignored on the Client.
 func IgnoreTopics(topics []string) ClientFunc {
 	return func(c *Client) {
 		c.ignoreTopics = topics
 	}
 }
 
-// IgnoreGroups sets the group patterns to be ignored on the Client.
+// IgnoreGroups configures the group patterns to be ignored on the Client.
 func IgnoreGroups(groups []string) ClientFunc {
 	return func(c *Client) {
 		c.ignoreGroups = groups
 	}
 }
 
-// OffsetChannel set the offset manager channel on the Client.
+// OffsetChannel configures the offset manager channel on the Client.
 func OffsetChannel(ch chan *kage.PartitionOffset) ClientFunc {
 	return func(c *Client) {
 		c.offsetCh = ch

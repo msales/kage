@@ -7,10 +7,13 @@ import (
 	"github.com/inconshreveable/log15"
 )
 
+// Service represents a service with health checks.
 type Service interface {
+	// IsHealthy checks the health of the service.
 	IsHealthy() bool
 }
 
+// Server represents an http server.
 type Server struct {
 	addr       string
 	ln         *net.TCPListener
@@ -21,6 +24,7 @@ type Server struct {
 	logger log15.Logger
 }
 
+// New create and returns a new Server.
 func New(addr string, services []Service, logger log15.Logger) *Server {
 	return &Server{
 		addr:       addr,
