@@ -9,6 +9,65 @@ import (
 	"github.com/msales/kage/testutil/mocks"
 )
 
+func TestCredentials(t *testing.T) {
+	r := &InfluxReporter{}
+
+	Credentials("addr", "username", "password")(r)
+
+	if r.addr != "addr" {
+		t.Fatalf("expected address %s; got %s", "addr", r.addr)
+	}
+
+	if r.username != "username" {
+		t.Fatalf("expected username %s; got %s", "username", r.username)
+	}
+
+	if r.password != "password" {
+		t.Fatalf("expected password %s; got %s", "password", r.password)
+	}
+}
+
+func TestDatabase(t *testing.T) {
+	r := &InfluxReporter{}
+
+	Database("db")(r)
+
+	if r.database != "db" {
+		t.Fatalf("expected database %s; got %s", "db", r.database)
+	}
+}
+
+func TestMetric(t *testing.T) {
+	r := &InfluxReporter{}
+
+	Metric("kafka")(r)
+
+	if r.metric != "kafka" {
+		t.Fatalf("expected metric %s; got %s", "kafka", r.metric)
+	}
+}
+
+func TestTags(t *testing.T) {
+	r := &InfluxReporter{}
+
+	Tags(map[string]string{"foo": "bar"})(r)
+
+	if r.tags["foo"] != "bar" {
+		t.Fatal("expected tags not found")
+	}
+}
+
+func TestLog(t *testing.T) {
+	log := log15.New()
+	r := &InfluxReporter{}
+
+	Log(log)(r)
+
+	if r.log != log {
+		t.Fatal("expected log not found")
+	}
+}
+
 func TestInfluxReporter_ReportBrokerOffsets(t *testing.T) {
 	log := log15.New()
 	log.SetHandler(log15.DiscardHandler())
