@@ -175,7 +175,7 @@ func TestMemoryStore_CleanConsumerOffsets(t *testing.T) {
 		Partition: 0,
 		Group:     "foo",
 		Offset:    500,
-		Timestamp: time.Now().Unix() * 1000 - (25 * int64(time.Hour.Seconds()) * 1000),
+		Timestamp: time.Now().Unix()*1000 - (25 * int64(time.Hour.Seconds()) * 1000),
 	})
 
 	memStore.CleanConsumerOffsets()

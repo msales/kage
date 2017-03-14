@@ -26,7 +26,7 @@ type Client struct {
 	log log15.Logger
 }
 
-// New creates and returns a bew Client for a Kafka cluster.
+// New creates and returns a new Client for a Kafka cluster.
 func New(opts ...ClientFunc) (*Client, error) {
 	client := &Client{}
 
@@ -64,11 +64,11 @@ func New(opts ...ClientFunc) (*Client, error) {
 	return client, nil
 }
 
-// Check the health of the Kafka connection.
+// IsHealthy checks the health of the Kafka client.
 func (c *Client) IsHealthy() bool {
 	for _, b := range c.client.Brokers() {
 		if ok, err := b.Connected(); !ok && err != nil {
-			c.log.Crit(err.Error());
+			c.log.Crit(err.Error())
 			return false
 		}
 	}
@@ -190,7 +190,7 @@ func (c *Client) getConsumerOffsets() error {
 				c.log.Error(fmt.Sprintf("Failed to connect to broker broker %v: %v", broker.ID(), err))
 				continue
 			}
-			
+
 			if err := broker.Open(c.client.Config()); err != nil {
 				c.log.Error(fmt.Sprintf("Failed to connect to broker broker %v: %v", broker.ID(), err))
 				continue

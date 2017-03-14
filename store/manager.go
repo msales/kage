@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// MemoryStore represents an in memory offset store.
 type MemoryStore struct {
 	offsets       *ClusterOffsets
 	cleanupTicker *time.Ticker
@@ -16,6 +17,7 @@ type MemoryStore struct {
 	OffsetCh chan *kage.PartitionOffset
 }
 
+// ConsumerOffsets represents the broker and consumer offset manager
 type ClusterOffsets struct {
 	broker     kage.BrokerOffsets
 	brokerLock sync.RWMutex
@@ -24,6 +26,7 @@ type ClusterOffsets struct {
 	consumerLock sync.RWMutex
 }
 
+// New creates and returns a new MemoryStore.
 func New() (*MemoryStore, error) {
 	m := &MemoryStore{
 		shutdown: make(chan struct{}),
@@ -64,6 +67,7 @@ func New() (*MemoryStore, error) {
 	return m, nil
 }
 
+// AddOffset adds an offset into the store.
 func (m *MemoryStore) AddOffset(o *kage.PartitionOffset) {
 	if o.Group == "" {
 		m.addBrokerOffset(o)
@@ -72,6 +76,7 @@ func (m *MemoryStore) AddOffset(o *kage.PartitionOffset) {
 	}
 }
 
+// BrokerOffsets returns a snapshot of the current broker offsets.
 func (m *MemoryStore) BrokerOffsets() kage.BrokerOffsets {
 	m.offsets.brokerLock.RLock()
 	defer m.offsets.brokerLock.RUnlock()
@@ -96,6 +101,7 @@ func (m *MemoryStore) BrokerOffsets() kage.BrokerOffsets {
 	return snapshot
 }
 
+// ConsumerOffsets returns a snapshot of the current consumer group offsets.
 func (m *MemoryStore) ConsumerOffsets() kage.ConsumerOffsets {
 	m.offsets.consumerLock.RLock()
 	defer m.offsets.consumerLock.RUnlock()
@@ -124,6 +130,35 @@ func (m *MemoryStore) ConsumerOffsets() kage.ConsumerOffsets {
 	return snapshot
 }
 
+// CleanConsumerOffsets cleans old offsets from the MemoryStore.
+func (m *MemoryStore) CleanConsumerOffsets() {
+	m.offsets.consumerLock.Lock()
+	defer m.offsets.consumerLock.Unlock()
+
+	ts := time.Now().Unix() * 1000
+	for group, topics := range m.offsets.consumer {
+		for topic, partitions := range topics {
+			maxDuration := int64(0)
+
+			for _, offset := range partitions {
+				duration := ts - offset.Timestamp
+				if duration > maxDuration {
+					maxDuration = duration
+				}
+			}
+
+			if maxDuration > (24 * int64(time.Hour.Seconds()) * 1000) {
+				delete(m.offsets.consumer[group], topic)
+			}
+		}
+
+		if len(m.offsets.consumer[group]) == 0 {
+			delete(m.offsets.consumer, group)
+		}
+	}
+}
+
+// Shutdown shuts the MemoryStore down.
 func (m *MemoryStore) Shutdown() {
 	m.cleanupTicker.Stop()
 	close(m.shutdown)
@@ -224,31 +259,4 @@ func (m *MemoryStore) getBrokerOffset(o *kage.PartitionOffset) (int64, int) {
 	}
 
 	return topic[o.Partition].NewestOffset, len(topic)
-}
-
-func (m *MemoryStore) CleanConsumerOffsets() {
-	m.offsets.consumerLock.Lock()
-	defer m.offsets.consumerLock.Unlock()
-
-	ts := time.Now().Unix() * 1000
-	for group, topics := range m.offsets.consumer {
-		for topic, partitions := range topics {
-			maxDuration := int64(0)
-
-			for _, offset := range partitions {
-				duration := ts - offset.Timestamp
-				if duration > maxDuration {
-					maxDuration = duration
-				}
-			}
-
-			if maxDuration > (24 * int64(time.Hour.Seconds()) * 1000) {
-				delete(m.offsets.consumer[group], topic)
-			}
-		}
-
-		if len(m.offsets.consumer[group]) == 0 {
-			delete(m.offsets.consumer, group)
-		}
-	}
 }

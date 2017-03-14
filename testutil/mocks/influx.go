@@ -2,8 +2,8 @@ package mocks
 
 import (
 	"errors"
-	"time"
 	"github.com/influxdata/influxdb/client/v2"
+	"time"
 )
 
 type MockInfluxClient struct {
@@ -28,7 +28,7 @@ func (c *MockInfluxClient) Write(bp client.BatchPoints) error {
 
 func (c *MockInfluxClient) Query(q client.Query) (*client.Response, error) {
 	return &client.Response{
-		Err: "",
+		Err:     "",
 		Results: []client.Result{},
 	}, nil
 }

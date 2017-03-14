@@ -23,10 +23,10 @@ type Server struct {
 
 func New(addr string, services []Service, logger log15.Logger) *Server {
 	return &Server{
-		addr:     addr,
+		addr:       addr,
 		shutdownCh: make(chan struct{}),
-		services: services,
-		logger:   logger,
+		services:   services,
+		logger:     logger,
 	}
 }
 

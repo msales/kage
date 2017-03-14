@@ -29,7 +29,7 @@ func (r ConsoleReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 					partition,
 					offset.OldestOffset,
 					offset.NewestOffset,
-					offset.NewestOffset - offset.OldestOffset,
+					offset.NewestOffset-offset.OldestOffset,
 				),
 			)
 		}
@@ -43,7 +43,7 @@ func (r ConsoleReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 				io.WriteString(
 					r.w,
 					fmt.Sprintf(
-					"%s %s:%d offset:%d lag:%d \n",
+						"%s %s:%d offset:%d lag:%d \n",
 						group,
 						topic,
 						partition,

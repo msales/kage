@@ -16,7 +16,7 @@ func TestConsoleReporter_ReportBrokerOffsets(t *testing.T) {
 
 	offsets := &kage.BrokerOffsets{
 		"test": []*kage.BrokerOffset{
-			&kage.BrokerOffset{
+			{
 				OldestOffset: 0,
 				NewestOffset: 1000,
 				Timestamp:    time.Now().Unix() * 1000,
@@ -40,8 +40,8 @@ func TestConsoleReporter_ReportConsumerOffsets(t *testing.T) {
 
 	offsets := &kage.ConsumerOffsets{
 		"foo": map[string][]*kage.ConsumerOffset{
-			"test": []*kage.ConsumerOffset{
-				&kage.ConsumerOffset{
+			"test": {
+				{
 					Offset:    1000,
 					Lag:       100,
 					Timestamp: time.Now().Unix() * 1000,

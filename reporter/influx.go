@@ -81,7 +81,7 @@ func NewInfluxReporter(opts ...InfluxReporterFunc) (*InfluxReporter, error) {
 
 func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 	pts, err := client.NewBatchPoints(client.BatchPointsConfig{
-		Database: r.database,
+		Database:  r.database,
 		Precision: "s",
 	})
 	if err != nil {
@@ -129,7 +129,7 @@ func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 
 func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 	pts, err := client.NewBatchPoints(client.BatchPointsConfig{
-		Database: r.database,
+		Database:  r.database,
 		Precision: "s",
 	})
 	if err != nil {

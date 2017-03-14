@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/Shopify/sarama"
-	"github.com/msales/kage/kage"
 	"github.com/inconshreveable/log15"
+	"github.com/msales/kage/kage"
 )
 
 func TestClient_IsHealthy(t *testing.T) {
@@ -56,9 +56,9 @@ func TestClient_getOffsets(t *testing.T) {
 	}
 
 	c := &Client{
-		client: kafka,
+		client:   kafka,
 		offsetCh: make(chan *kage.PartitionOffset, 100),
-		log: log15.New(),
+		log:      log15.New(),
 	}
 
 	c.getOffsets()
@@ -81,23 +81,23 @@ func TestClient_getConsumerOffsets(t *testing.T) {
 	seedBroker.Returns(metadata)
 
 	leader.Returns(&sarama.ListGroupsResponse{
-		Err: sarama.ErrNoError,
-		Groups: map[string]string{"test":"test"},
+		Err:    sarama.ErrNoError,
+		Groups: map[string]string{"test": "test"},
 	})
 
 	seedBroker.Returns(&sarama.ConsumerMetadataResponse{
-		Err: sarama.ErrNoError,
-		CoordinatorID: leader.BrokerID(),
+		Err:             sarama.ErrNoError,
+		CoordinatorID:   leader.BrokerID(),
 		CoordinatorHost: "127.0.0.1",
 		CoordinatorPort: leader.Port(),
 	})
 
 	leader.Returns(&sarama.DescribeGroupsResponse{
-		Groups: []*sarama.GroupDescription{&sarama.GroupDescription{
-			Err: sarama.ErrNoError,
+		Groups: []*sarama.GroupDescription{{
+			Err:     sarama.ErrNoError,
 			GroupId: "test",
 			Members: map[string]*sarama.GroupMemberDescription{
-				"test": &sarama.GroupMemberDescription{
+				"test": {
 					MemberAssignment: []byte{0, 0, 0, 0, 0, 1, 0, 0x04, 't', 'e', 's', 't', 0, 0, 0, 0x01, 0, 0, 0, 0, 0, 0, 0, 0x01, 0},
 				},
 			},
@@ -106,7 +106,7 @@ func TestClient_getConsumerOffsets(t *testing.T) {
 
 	offset := new(sarama.OffsetFetchResponse)
 	offset.AddBlock("test", 0, &sarama.OffsetFetchResponseBlock{
-		Err: sarama.ErrNoError,
+		Err:    sarama.ErrNoError,
 		Offset: 123,
 	})
 	leader.Returns(offset)
@@ -119,9 +119,9 @@ func TestClient_getConsumerOffsets(t *testing.T) {
 	}
 
 	c := &Client{
-		client: kafka,
+		client:   kafka,
 		offsetCh: make(chan *kage.PartitionOffset, 100),
-		log: log15.New(),
+		log:      log15.New(),
 	}
 
 	c.getConsumerOffsets()
