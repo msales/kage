@@ -191,7 +191,10 @@ func (c *Client) getConsumerOffsets() error {
 				continue
 			}
 			
-			broker.Open(c.client.Confif())
+			if err := broker.Open(c.client.Config()); err != nil {
+				c.log.Error(fmt.Sprintf("Failed to connect to broker broker %v: %v", broker.ID(), err))
+				continue
+			}
 		}
 
 		groups, err := broker.ListGroups(&sarama.ListGroupsRequest{})
