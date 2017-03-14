@@ -1,0 +1,33 @@
+Source: kage
+Section: devel
+Priority: extra
+Maintainer: Debian Go Packaging Team <pkg-go-maintainers@lists.alioth.debian.org>
+Uploaders: Hilko Bengen <bengen@debian.org>
+Build-Depends: debhelper (>= 10),
+               dh-golang,
+               golang-any,
+               golang-github-tendermint-log15-dev,
+               golang-github-influxdata-influxdb-dev,
+               golang-github-ryanuber-go-glob-dev,
+               golang-github-shopify-sarama-dev (>= 1.11),
+               golang-gopkg-alecthomas-kingpin.v2-dev
+Standards-Version: 3.9.8
+Homepage: https://github.com/msales/kage
+Vcs-Browser: https://anonscm.debian.org/cgit/pkg-go/packages/kage.git
+Vcs-Git: https://anonscm.debian.org/git/pkg-go/packages/kage.git
+XS-Go-Import-Path: github.com/msales/kage
+
+Package: kage
+Architecture: any
+Built-Using: ${misc:Built-Using}
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
+Description: Kafka metrics agent.
+ Kage Go Report Card
+ (https://goreportcard.com/report/github.com/msales/kage) Build
+ Status (https://travis-ci.org/msales/kage) Coverage Status
+ (https://coveralls.io/github/msales/kage?branch=master) GitHub
+ release (https://github.com/msales/kage/releases) GitHub license
+ (https://raw.githubusercontent.com/msales/kage/master/LICENSE)
+ .
+ A Kafka metrics agent that writes directly to InfluxDB.  WIP
