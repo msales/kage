@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/inconshreveable/log15"
 	"github.com/msales/kage/kage"
 	"github.com/msales/kage/testutil/mocks"
+	"gopkg.in/inconshreveable/log15.v2"
 )
 
 func TestCredentials(t *testing.T) {

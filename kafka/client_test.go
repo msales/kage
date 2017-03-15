@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/Shopify/sarama"
-	"github.com/inconshreveable/log15"
 	"github.com/msales/kage/kage"
+	"gopkg.in/inconshreveable/log15.v2"
 )
 
 func TestClient_IsHealthy(t *testing.T) {
