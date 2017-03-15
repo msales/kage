@@ -8,13 +8,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/inconshreveable/log15"
 	"github.com/msales/kage/kafka"
 	"github.com/msales/kage/kage"
 	"github.com/msales/kage/reporter"
 	"github.com/msales/kage/server"
 	"github.com/msales/kage/store"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/inconshreveable/log15.v2"
 )
 
 var (

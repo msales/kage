@@ -5,7 +5,7 @@
 			"importpath": "github.com/Shopify/sarama",
 			"repository": "https://github.com/Shopify/sarama",
 			"vcs": "git",
-			"revision": "8093021a9bebdd8046c88bbc2c6f747e5a03cf66",
+			"revision": "3efb95dad8fbcd194d3c06f7b9c40eabeb719b36",
 			"branch": "master",
 			"notests": true
 		},
@@ -60,14 +60,6 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/go-stack/stack",
-			"repository": "https://github.com/go-stack/stack",
-			"vcs": "git",
-			"revision": "100eb0c0a9c5b306ca2fb4f165df21d80ada4b82",
-			"branch": "master",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/golang/snappy",
 			"repository": "https://github.com/golang/snappy",
 			"vcs": "git",
@@ -76,19 +68,11 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/inconshreveable/log15",
-			"repository": "https://github.com/inconshreveable/log15",
-			"vcs": "git",
-			"revision": "39bacc234bf1afd0b68573e95b45871f67ba2cd4",
-			"branch": "master",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/influxdata/influxdb/client/v2",
 			"repository": "https://github.com/influxdata/influxdb",
 			"vcs": "git",
-			"revision": "c83c742b49f2a22ab997081c19ea0fb44f2bb8fc",
-			"branch": "master",
+			"revision": "1bcf3ae74c6b9c4897dab68d513d056277eb24f7",
+			"branch": "HEAD",
 			"path": "/client/v2",
 			"notests": true
 		},
@@ -96,8 +80,8 @@
 			"importpath": "github.com/influxdata/influxdb/models",
 			"repository": "https://github.com/influxdata/influxdb",
 			"vcs": "git",
-			"revision": "c83c742b49f2a22ab997081c19ea0fb44f2bb8fc",
-			"branch": "master",
+			"revision": "1bcf3ae74c6b9c4897dab68d513d056277eb24f7",
+			"branch": "HEAD",
 			"path": "models",
 			"notests": true
 		},
@@ -105,8 +89,8 @@
 			"importpath": "github.com/influxdata/influxdb/pkg/escape",
 			"repository": "https://github.com/influxdata/influxdb",
 			"vcs": "git",
-			"revision": "c83c742b49f2a22ab997081c19ea0fb44f2bb8fc",
-			"branch": "master",
+			"revision": "1bcf3ae74c6b9c4897dab68d513d056277eb24f7",
+			"branch": "HEAD",
 			"path": "pkg/escape",
 			"notests": true
 		},
@@ -122,7 +106,7 @@
 			"importpath": "github.com/mattn/go-colorable",
 			"repository": "https://github.com/mattn/go-colorable",
 			"vcs": "git",
-			"revision": "d898aa9fb31c91f35dd28ca75db377eff023c076",
+			"revision": "a392f450ea64cee2b268dfaacdc2502b50a22b18",
 			"branch": "master",
 			"notests": true
 		},
@@ -130,7 +114,7 @@
 			"importpath": "github.com/mattn/go-isatty",
 			"repository": "https://github.com/mattn/go-isatty",
 			"vcs": "git",
-			"revision": "dda3de49cbfcec471bd7a70e6cc01fcc3ff90109",
+			"revision": "57fdcb988a5c543893cc61bce354a6e24ab70022",
 			"branch": "master",
 			"notests": true
 		},
@@ -163,8 +147,8 @@
 			"importpath": "github.com/ryanuber/go-glob",
 			"repository": "https://github.com/ryanuber/go-glob",
 			"vcs": "git",
-			"revision": "256dc444b735e061061cf46c809487313d5b0065",
-			"branch": "master",
+			"revision": "572520ed46dbddaed19ea3d9541bdd0494163693",
+			"branch": "HEAD",
 			"notests": true
 		},
 		{
@@ -179,7 +163,7 @@
 			"importpath": "golang.org/x/sys/unix",
 			"repository": "https://go.googlesource.com/sys",
 			"vcs": "git",
-			"revision": "76cc09b634294339fa19ec41b5f2a0b3932cea8b",
+			"revision": "99f16d856c9836c42d24e7ab64ea72916925fa97",
 			"branch": "master",
 			"path": "/unix",
 			"notests": true
@@ -189,7 +173,15 @@
 			"repository": "https://gopkg.in/alecthomas/kingpin.v2",
 			"vcs": "git",
 			"revision": "e9044be3ab2a8e11d4e1f418d12f0790d57e8d70",
-			"branch": "master",
+			"branch": "HEAD",
+			"notests": true
+		},
+		{
+			"importpath": "gopkg.in/inconshreveable/log15.v2",
+			"repository": "https://gopkg.in/inconshreveable/log15.v2",
+			"vcs": "git",
+			"revision": "b105bd37f74e5d9dc7b6ad7806715c7a2b83fd3f",
+			"branch": "HEAD",
 			"notests": true
 		}
 	]

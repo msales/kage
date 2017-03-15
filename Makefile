@@ -1,7 +1,7 @@
 .PHONY: build ci test vet
 
 build:
-	go build -o build/kage ./cmd/kage
+	go build -o ./dist/kage ./cmd/kage
 
 clean:
 	rm -rf build/*

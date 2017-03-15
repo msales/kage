@@ -4,7 +4,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/inconshreveable/log15"
+	"gopkg.in/inconshreveable/log15.v2"
 )
 
 // Service represents a service with health checks.

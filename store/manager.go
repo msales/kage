@@ -2,10 +2,10 @@ package store
 
 import (
 	"sync"
+	"time"
 
 	"github.com/Shopify/sarama"
 	"github.com/msales/kage/kage"
-	"time"
 )
 
 // MemoryStore represents an in memory offset store.
