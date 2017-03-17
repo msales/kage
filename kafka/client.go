@@ -180,7 +180,8 @@ func (c *Client) getOffsets() error {
 
 // getConsumerOffsets gets all the consumer offsets and send them to the offset manager.
 func (c *Client) getConsumerOffsets() error {
-	requests := make(map[int32]*sarama.DescribeGroupsRequest)
+	topicMap := c.getTopics()
+	requests := make(map[int32]map[string]*sarama.OffsetFetchRequest)
 	coordinators := make(map[int32]*sarama.Broker)
 
 	brokers := c.client.Brokers()
@@ -216,79 +217,68 @@ func (c *Client) getConsumerOffsets() error {
 
 			if _, ok := requests[coordinator.ID()]; !ok {
 				coordinators[coordinator.ID()] = coordinator
-				requests[coordinator.ID()] = &sarama.DescribeGroupsRequest{}
+				requests[coordinator.ID()] = make(map[string]*sarama.OffsetFetchRequest)
 			}
 
-			requests[coordinator.ID()].AddGroup(group)
+			if _, ok := requests[coordinator.ID()][group]; !ok {
+				requests[coordinator.ID()][group] = &sarama.OffsetFetchRequest{ConsumerGroup: group, Version: 1}
+			}
+
+			//requests[coordinator.ID()].AddGroup(group)
+			for topic, partitions := range topicMap {
+				for i := 0; i < partitions; i++ {
+					requests[coordinator.ID()][group].AddPartition(topic, int32(i))
+				}
+			}
 		}
 	}
 
 	var wg sync.WaitGroup
-	getConsumerOffsets := func(brokerID int32, request *sarama.DescribeGroupsRequest) {
+	getConsumerOffsets := func(brokerID int32, group string, request *sarama.OffsetFetchRequest) {
 		defer wg.Done()
 
 		coordinator := coordinators[brokerID]
 
-		response, err := coordinator.DescribeGroups(request)
+		offsets, err := coordinator.FetchOffset(request)
 		if err != nil {
-			c.log.Error(fmt.Sprintf("Cannot describe consumer offsets from broker %v: %v", brokerID, err))
+			c.log.Error(fmt.Sprintf("Cannot get group topic offsets %v: %v", brokerID, err))
 
 			return
 		}
 
-		for _, groupDesc := range response.Groups {
-			offsetRequest := &sarama.OffsetFetchRequest{ConsumerGroup: groupDesc.GroupId, Version: 1}
+		ts := time.Now().Unix() * 1000
+		for topic, partitions := range offsets.Blocks {
+			for partition, block := range partitions {
+				if block.Err != sarama.ErrNoError {
+					c.log.Error(fmt.Sprintf("Cannot get group topic offsets %v: %v", brokerID, err))
 
-			for _, groupMemDesc := range groupDesc.Members {
-				meta, err := groupMemDesc.GetMemberAssignment()
-				if err != nil {
-					c.log.Error(fmt.Sprintf("Cannot get group member metadata %v: %v", brokerID, err))
-
-					return
+					continue
 				}
 
-				for topic, partitions := range meta.Topics {
-
-					for _, partition := range partitions {
-						offsetRequest.AddPartition(topic, partition)
-					}
+				if block.Offset == -1 {
+					// We don't have an offset for this topic partition, ignore.
+					continue
 				}
-			}
 
-			offsets, err := coordinator.FetchOffset(offsetRequest)
-			if err != nil {
-				c.log.Error(fmt.Sprintf("Cannot get group topic offsets %v: %v", brokerID, err))
-
-				return
-			}
-
-			ts := time.Now().Unix() * 1000
-			for topic, partitions := range offsets.Blocks {
-				for partition, block := range partitions {
-					if block.Err != sarama.ErrNoError {
-						c.log.Error(fmt.Sprintf("Cannot get group %v topic offsets %v: %v", groupDesc.GroupId, topic, block.Err))
-
-						continue
-					}
-
-					offset := &kage.PartitionOffset{
-						Topic:     topic,
-						Partition: partition,
-						Group:     groupDesc.GroupId,
-						Offset:    block.Offset,
-						Timestamp: ts,
-					}
-
-					c.offsetCh <- offset
+				offset := &kage.PartitionOffset{
+					Topic:     topic,
+					Partition: partition,
+					Group:     group,
+					Offset:    block.Offset,
+					Timestamp: ts,
 				}
+
+				c.offsetCh <- offset
 			}
 		}
 	}
 
-	for brokerID, request := range requests {
-		wg.Add(1)
+	for brokerID, groups := range requests {
+		for group, request := range groups {
+			wg.Add(1)
 
-		go getConsumerOffsets(brokerID, request)
+			go getConsumerOffsets(brokerID, group, request)
+		}
 	}
 
 	wg.Wait()

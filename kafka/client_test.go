@@ -92,18 +92,6 @@ func TestClient_getConsumerOffsets(t *testing.T) {
 		CoordinatorPort: leader.Port(),
 	})
 
-	leader.Returns(&sarama.DescribeGroupsResponse{
-		Groups: []*sarama.GroupDescription{{
-			Err:     sarama.ErrNoError,
-			GroupId: "test",
-			Members: map[string]*sarama.GroupMemberDescription{
-				"test": {
-					MemberAssignment: []byte{0, 0, 0, 0, 0, 1, 0, 0x04, 't', 'e', 's', 't', 0, 0, 0, 0x01, 0, 0, 0, 0, 0, 0, 0, 0x01, 0},
-				},
-			},
-		}},
-	})
-
 	offset := new(sarama.OffsetFetchResponse)
 	offset.AddBlock("test", 0, &sarama.OffsetFetchResponseBlock{
 		Err:    sarama.ErrNoError,
