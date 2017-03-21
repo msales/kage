@@ -13,17 +13,13 @@ kage (as in "Kafka AGEnt") reads Offset- and Lagmetrics from Kafka and writes th
 ## Motivation
 
 When you're running Kafka you probably want to have monitoring as well.
-
 You can - of course - query the beans directly via JMX and work with that, but that requires another JVM that collects the data.
-
 If you're a java-shop anyway and have all that available - give it a try.
-
 We decided that we wanted to get the metrics straight out of Kafka and feed them into InfluxDB in a configurable way - and here we are now.
 
 ## Installation
 
-Grab a binary from the [Releases](/releases) or clone the repo and build it yourself.
-
+Grab a binary from the Releases or clone the repo and build it yourself.
 Fill the provided example.json with appropriate configuration for your setup, copy both files to the host you want to run kage on and run
 ```
 kage --config=example.json
@@ -33,7 +29,6 @@ kage --config=example.json
 ## Contributors
 
 We're supposed to tell you how to contribute to kage here.
-
 Since this is github: You know the drill - open issues, fork, create PRs, ...
 
 ## Todo
