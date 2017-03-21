@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# we want one symlink per .json in /etc/kage so that we're spawning them all
+
+set -eu
+
+GENDIR="$1"
+WANTDIR="$1/kage.service.wants"
+SERVICEFILE="/lib/systemd/system/kage@.service"
+AUTOSTART="all"
+CONFIG_DIR=/etc/kage
+
+mkdir -p "$WANTDIR"
+
+if test -e /etc/default/kage ; then
+        . /etc/default/kage
+fi
+
+if test "x$AUTOSTART" = "xnone" ; then
+        exit 0
+fi
+
