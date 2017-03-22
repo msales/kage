@@ -16,6 +16,7 @@ type Client struct {
 	brokers []string
 
 	client               sarama.Client
+	metadataTicker       *time.Ticker
 	brokerOffsetTicker   *time.Ticker
 	consumerOffsetTicker *time.Ticker
 	offsetCh             chan *kage.PartitionOffset
@@ -42,6 +43,13 @@ func New(opts ...ClientFunc) (*Client, error) {
 		return nil, err
 	}
 	client.client = kafka
+
+	client.metadataTicker = time.NewTicker(10 * time.Minute)
+	go func() {
+		for range client.metadataTicker.C {
+			client.refreshMetadata()
+		}
+	}()
 
 	// Get the offsets for all topics
 	client.getOffsets()
@@ -79,6 +87,7 @@ func (c *Client) IsHealthy() bool {
 // Shutdown shuts down the Client.
 func (c *Client) Shutdown() {
 	// Stop the offset ticker
+	c.metadataTicker.Stop()
 	c.brokerOffsetTicker.Stop()
 	c.consumerOffsetTicker.Stop()
 }
@@ -95,6 +104,13 @@ func (c *Client) getTopics() map[string]int {
 	}
 
 	return topicMap
+}
+
+// refreshMetadata refreshes the broker metatdata
+func (c *Client) refreshMetadata(topics ...string) {
+	if err := c.client.RefreshMetadata(topics...); err != nil {
+		c.log.Error(fmt.Sprintf("Could not refresh topic metadata: %v", err))
+	}
 }
 
 // getOffsets gets all topic offsets and sends them to the offset manager.
@@ -146,6 +162,11 @@ func (c *Client) getOffsets() error {
 		for topic, partitions := range response.Blocks {
 			for partition, offsetResp := range partitions {
 				if offsetResp.Err != sarama.ErrNoError {
+					if offsetResp.Err == sarama.ErrUnknownTopicOrPartition {
+						// If we get this, the metadata is likely off, force a refresh for this topic
+						c.refreshMetadata(topic)
+					}
+
 					c.log.Warn(fmt.Sprintf("Error in OffsetResponse for %s:%v from broker %v: %s", topic, partition, brokerID, offsetResp.Err.Error()))
 
 					continue
@@ -250,7 +271,7 @@ func (c *Client) getConsumerOffsets() error {
 		for topic, partitions := range offsets.Blocks {
 			for partition, block := range partitions {
 				if block.Err != sarama.ErrNoError {
-					c.log.Error(fmt.Sprintf("Cannot get group topic offsets %v: %v", brokerID, err))
+					c.log.Error(fmt.Sprintf("Cannot get group topic offsets %v: %v", brokerID, block.Err.Error()))
 
 					continue
 				}
