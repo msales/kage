@@ -1,0 +1,21 @@
+# the generator puts these where they belong and that in turn 
+# gives you kage@{configuration}.service per {configuration}.json in /etc/kage
+
+[Unit]
+Description=kage monitoring of %i
+PartOf=kage.service
+ReloadPropagatedFrom=kage.service
+
+[Service]
+Type=simple
+User=kage
+Group=kage
+ExecStart=/usr/bin/kage --config=/etc/kage/%i.json
+ExecReload=/bin/kill -HUP $MAINPID
+WorkingDirectory=/etc/kage
+Restart=on-failure
+SyslogIdentifier=kage-%i
+
+[Install]
+WantedBy=multi-user.target
+
