@@ -8,7 +8,7 @@
 
 ## Synopsis
 
-kage (as in "Kafka AGEnt") reads Offset- and Lagmetrics from Kafka and writes them to an InfluxDB.
+kage (as in "Kafka AGEnt") reads Offset- and Lag metrics from Kafka and writes them to an InfluxDB.
 
 ## Motivation
 
@@ -17,14 +17,19 @@ You can - of course - query the beans directly via JMX and work with that, but t
 If you're a java-shop anyway and have all that available - give it a try.  
 We decided that we wanted to get the metrics straight out of Kafka and feed them into InfluxDB in a configurable way - and here we are now.
 
-## Installation
+## Basic Installation
 
 Grab a binary from the Releases or clone the repo and build it yourself.  
-Fill the provided example.json with appropriate configuration for your setup, copy both files to the host you want to run kage on and run
+Fill the provided [sample configuration](example.json) with appropriate configuration for your setup, copy both files to the host you want to run kage on and run
 ```
 kage --config=example.json
 
 ```
+
+## Advanced Installation
+
+There's systemd configuration magic in examples/systemd/.  
+Put the files in the appropriate directories on your machine (in case of Debian/Ubuntu that should be /lib/systemd/system and /lib/systemd/system-generators), create /etc/kage/, run ```systemctl daemon-reload``` and then you should get one service per configuration-file in /etc/kage/.
 
 ## Contributors
 
@@ -33,9 +38,9 @@ Since this is github: You know the drill - open issues, fork, create PRs, ...
 
 ## Todo
 
- * provide systemd-config-snippets
  * provide ansible-templates and examples
  * set up debian packaging
+ * maybe provide minimal docker container
 
 ## License
 
