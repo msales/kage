@@ -18,11 +18,30 @@ import (
 )
 
 var (
-	configPath = kingpin.Flag("config", "The path to the configuration file").Default("./kage.json").String()
+	configPath = kingpin.Flag("config", "The path to the JSON configuration file. This will be overriden by any command line arguemnts").String()
+
+	log = kingpin.Flag("log", "The type of log to use. Options: 'stdout', 'file'").Default("stdout").Enum("stdout", "file")
+	logFile = kingpin.Flag("log-file", "The path to the file to log to. Only works when --log is set to file").Default("./kage.log").String()
+	logLevel = kingpin.Flag("log-level", "The log level to use. Options: 'debug', 'info', 'warn', 'error'").Default("info").Enum("debug", "info", "warn", "error")
+
+	brokers = kingpin.Flag("brokers", "The kafka seed brokers connect to, Format: 'ip:port'").Strings()
+	ignoreTopics = kingpin.Flag("ignore-topics", "The kafka topic patterns to ignore. This may contian wildcards").Strings()
+	ignoreGroups = kingpin.Flag("ignore-groups", "The kafka consumer group patterns to ignore. This may contian wildcards").Strings()
+
+	reporters = kingpin.Flag("reporters", "The reporters to use. Options: 'influx', 'stdout'").Default("stdout").Enums("influx", "stdout")
+
+	influx = kingpin.Flag("influx", "The DSN of the InfluxDB server to report to. Format: http://user:pass@ip:port/database'").URL()
+	influxMetric = kingpin.Flag("influx-metric", "The measurement name to report statistics under").Default("kafka").String()
+	influxTags = kingpin.Flag("influx-tags", "Additional tags to add to the statistics.").PlaceHolder("KEY:VALUE").StringMap()
+
+	addr = kingpin.Flag("addr", "The address to bind to for the http server").String()
 )
 
 func main() {
 	kingpin.Version(Version)
+	kingpin.CommandLine.HelpFlag.Short('h')
+	kingpin.CommandLine.VersionFlag.Short('v')
+	kingpin.CommandLine.DefaultEnvars()
 	kingpin.Parse()
 
 	// Config
