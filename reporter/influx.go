@@ -99,6 +99,10 @@ func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 
 	for topic, partitions := range *o {
 		for partition, offset := range partitions {
+			if offset == nil {
+				continue
+			}
+
 			tags := map[string]string{
 				"type":      "BrokerOffset",
 				"topic":     topic,
@@ -149,6 +153,10 @@ func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 	for group, topics := range *o {
 		for topic, partitions := range topics {
 			for partition, offset := range partitions {
+				if offset == nil {
+					continue
+				}
+
 				tags := map[string]string{
 					"type":      "ConsumerOffset",
 					"group":     group,
