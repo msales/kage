@@ -149,6 +149,10 @@ func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 	for group, topics := range *o {
 		for topic, partitions := range topics {
 			for partition, offset := range partitions {
+				if offset == nil {
+					continue;
+				}
+
 				tags := map[string]string{
 					"type":      "ConsumerOffset",
 					"group":     group,
