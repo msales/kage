@@ -26,7 +26,7 @@ script:
 after_success:
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - export BRANCH=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
-  - if [ -z ${TRAVIS_TAG} ]; then docker tag kage:latest $REPO:$TRAVIS_TAG; fi
+  - if [ "$TRAVIS_TAG" != "" ]; then docker tag kage:latest $REPO:$TRAVIS_TAG; fi
   - docker tag kage:latest $REPO:$BRANCH
   - docker push $REPO
 
