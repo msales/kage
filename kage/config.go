@@ -1,49 +1,39 @@
 package kage
 
-import "encoding/json"
-
 // Config represents the application configuration.
 type Config struct {
-	Log        LogConfig `json:"log"`
-	LogMetrics bool      `json:"log-metrics"`
+	Log      string `json:"log"`
+	LogFile  string `json:"log-file"`
+	LogLevel string `json:"log-level"`
 
-	Kafka     KafkaConfig  `json:"kafka"`
-	Reporters Reporters    `json:"reporters"`
-	Server    ServerConfig `json:"server"`
-}
+	Kafka KafkaConfig  `json:"kafka"`
 
-// LogConfig represents the configuration for logging.
-type LogConfig struct {
-	Path  string `json:"path"`
-	Level string `json:"level"`
+	Reporters []string     `json:"reporters"`
+	Influx    InfluxConfig `json:"influx,omitempty"`
+
+	Server ServerConfig `json:"server,omitempty"`
 }
 
 // KafkaConfig represents the configuration for Kafka.
 type KafkaConfig struct {
 	Brokers []string          `json:"brokers"`
-	Ignore  KafkaIgnoreConfig `json:"ignore"`
+	Ignore  KafkaIgnoreConfig `json:"ignore,omitempty"`
 }
 
 // KafkaIgnoreConfig represents the configuration for ignored topics and groups.
 type KafkaIgnoreConfig struct {
-	Topics []string `json:"topics"`
-	Groups []string `json:"groups"`
+	Topics []string `json:"topics,omitempty"`
+	Groups []string `json:"groups,omitempty"`
+}
+
+// InfluxConfig represents the configuration for the influx reporter.
+type InfluxConfig struct {
+	DSN    string            `json:"dsn"`
+	Metric string            `json:"metric"`
+	Tags   map[string]string `json:"tags"`
 }
 
 // ServerConfig represents the configuration for the server.
 type ServerConfig struct {
-	Address string `json:"address"`
-}
-
-// Reporters represents the configuration for the reporters.
-type Reporters map[string]json.RawMessage
-
-// InfluxReporterConfig represents the configuration for the influx reporter.
-type InfluxReporterConfig struct {
-	Address  string            `json:"address"`
-	Username string            `json:"username"`
-	Password string            `json:"password"`
-	Database string            `json:"database"`
-	Metric   string            `json:"metric"`
-	Tags     map[string]string `json:"tags"`
+	Address string `json:"address,omitempty"`
 }

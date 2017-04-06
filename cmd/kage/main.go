@@ -1,8 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,55 +12,18 @@ import (
 	"github.com/msales/kage/reporter"
 	"github.com/msales/kage/server"
 	"github.com/msales/kage/store"
-	"gopkg.in/alecthomas/kingpin.v2"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
-var (
-	configPath = kingpin.Flag("config", "The path to the JSON configuration file. This will be overriden by any command line arguemnts").String()
-
-	log = kingpin.Flag("log", "The type of log to use. Options: 'stdout', 'file'").Default("stdout").Enum("stdout", "file")
-	logFile = kingpin.Flag("log-file", "The path to the file to log to. Only works when --log is set to file").Default("./kage.log").String()
-	logLevel = kingpin.Flag("log-level", "The log level to use. Options: 'debug', 'info', 'warn', 'error'").Default("info").Enum("debug", "info", "warn", "error")
-
-	brokers = kingpin.Flag("brokers", "The kafka seed brokers connect to, Format: 'ip:port'").Strings()
-	ignoreTopics = kingpin.Flag("ignore-topics", "The kafka topic patterns to ignore. This may contian wildcards").Strings()
-	ignoreGroups = kingpin.Flag("ignore-groups", "The kafka consumer group patterns to ignore. This may contian wildcards").Strings()
-
-	reporters = kingpin.Flag("reporters", "The reporters to use. Options: 'influx', 'stdout'").Default("stdout").Enums("influx", "stdout")
-
-	influx = kingpin.Flag("influx", "The DSN of the InfluxDB server to report to. Format: http://user:pass@ip:port/database'").URL()
-	influxMetric = kingpin.Flag("influx-metric", "The measurement name to report statistics under").Default("kafka").String()
-	influxTags = kingpin.Flag("influx-tags", "Additional tags to add to the statistics.").PlaceHolder("KEY:VALUE").StringMap()
-
-	addr = kingpin.Flag("addr", "The address to bind to for the http server").String()
-)
-
 func main() {
-	kingpin.Version(Version)
-	kingpin.CommandLine.HelpFlag.Short('h')
-	kingpin.CommandLine.VersionFlag.Short('v')
-	kingpin.CommandLine.DefaultEnvars()
-	kingpin.Parse()
-
 	// Config
-	config, err := readConfig(*configPath)
-	if err != nil {
-		panic(err)
-	}
-
-	lvl, err := log15.LvlFromString(config.Log.Level)
+	config, err := readConfig()
 	if err != nil {
 		panic(err)
 	}
 
 	// Logger
-	log := log15.New()
-	log.SetHandler(log15.StreamHandler(os.Stderr, log15.LogfmtFormat()))
-	log.SetHandler(log15.LvlFilterHandler(
-		lvl,
-		log15.Must.FileHandler(config.Log.Path, log15.LogfmtFormat()),
-	))
+	log := createLogger(config)
 
 	// Store
 	memStore, err := store.New()
@@ -84,7 +46,7 @@ func main() {
 	defer kafkaClient.Shutdown()
 
 	// Reporters
-	reporters, err := createReporters(config.Reporters, log)
+	reporters, err := createReporters(config, log)
 	if err != nil {
 		panic(err)
 	}
@@ -101,69 +63,80 @@ func main() {
 	}()
 
 	// Server
-	services := []server.Service{kafkaClient}
-	for _, r := range *reporters {
-		services = append(services, r)
+	if config.Server.Address != "" {
+		services := []server.Service{kafkaClient}
+		for _, r := range *reporters {
+			services = append(services, r)
+		}
+		srv := server.New(
+			config.Server.Address,
+			services,
+			log,
+		)
+		if err := srv.Start(); err != nil {
+			panic(err)
+		}
+		defer srv.Shutdown()
 	}
-	srv := server.New(
-		config.Server.Address,
-		services,
-		log,
-	)
-	if err := srv.Start(); err != nil {
-		panic(err)
-	}
-	defer srv.Shutdown()
 
 	// Wait for quit
 	quit := listenForSignals()
 	<-quit
 }
 
-// readConfig reads the configuration from the given path
-func readConfig(path string) (*kage.Config, error) {
-	file, err := ioutil.ReadFile(path)
+// createLogger creates a new logger from config
+func createLogger(config *kage.Config) log15.Logger {
+	lvl, err := log15.LvlFromString(config.LogLevel)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	config := &kage.Config{}
-	json.Unmarshal(file, config)
+	h := log15.StreamHandler(os.Stderr, log15.LogfmtFormat())
+	if config.Log == "file" {
+		h = log15.Must.FileHandler(config.LogFile, log15.LogfmtFormat())
+	}
 
-	return config, nil
+	log := log15.New()
+	log.SetHandler(log15.LvlFilterHandler(
+		lvl,
+		h,
+	))
+
+	return log
 }
 
 // createReporters creates reporters from the config
-func createReporters(reporters kage.Reporters, logger log15.Logger) (*reporter.Reporters, error) {
+func createReporters(config *kage.Config, logger log15.Logger) (*reporter.Reporters, error) {
 	rs := &reporter.Reporters{}
 
-	for t, config := range reporters {
-		switch t {
+	for _, name := range config.Reporters {
+		switch name {
 		case "influx":
-			influxConfig := kage.InfluxReporterConfig{}
-			json.Unmarshal(config, &influxConfig)
+			u, err := url.Parse(config.Influx.DSN)
+			if err != nil {
+				return nil, err
+			}
 
 			r, err := reporter.NewInfluxReporter(
-				reporter.Credentials(influxConfig.Address, influxConfig.Username, influxConfig.Password),
-				reporter.Database(influxConfig.Database),
-				reporter.Metric(influxConfig.Metric),
-				reporter.Tags(influxConfig.Tags),
+				reporter.DSN(u),
+				reporter.Metric(config.Influx.Metric),
+				reporter.Tags(config.Influx.Tags),
 				reporter.Log(logger),
 			)
 			if err != nil {
 				return nil, err
 			}
 
-			rs.Add(t, r)
+			rs.Add(name, r)
 			break
 
-		case "console":
+		case "stdout":
 			r, err := reporter.NewConsoleReporter()
 			if err != nil {
 				return nil, err
 			}
 
-			rs.Add(t, r)
+			rs.Add(name, r)
 		}
 	}
 

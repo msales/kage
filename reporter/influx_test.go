@@ -1,6 +1,7 @@
 package reporter
 
 import (
+	"net/url"
 	"testing"
 	"time"
 
@@ -9,12 +10,13 @@ import (
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
-func TestCredentials(t *testing.T) {
+func TestDSN(t *testing.T) {
 	r := &InfluxReporter{}
 
-	Credentials("addr", "username", "password")(r)
+	u, _ := url.Parse("https://username:password@addr:1234/db")
+	DSN(u)(r)
 
-	if r.addr != "addr" {
+	if r.addr != "https://addr:1234" {
 		t.Fatalf("expected address %s; got %s", "addr", r.addr)
 	}
 
@@ -25,12 +27,6 @@ func TestCredentials(t *testing.T) {
 	if r.password != "password" {
 		t.Fatalf("expected password %s; got %s", "password", r.password)
 	}
-}
-
-func TestDatabase(t *testing.T) {
-	r := &InfluxReporter{}
-
-	Database("db")(r)
 
 	if r.database != "db" {
 		t.Fatalf("expected database %s; got %s", "db", r.database)
