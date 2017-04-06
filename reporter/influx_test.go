@@ -33,6 +33,29 @@ func TestDSN(t *testing.T) {
 	}
 }
 
+func TestDSN_NoUserInfo(t *testing.T) {
+	r := &InfluxReporter{}
+
+	u, _ := url.Parse("https://addr:1234/db")
+	DSN(u)(r)
+
+	if r.addr != "https://addr:1234" {
+		t.Fatalf("expected address %s; got %s", "addr", r.addr)
+	}
+
+	if r.username != "" {
+		t.Fatalf("expected username %s; got %s", "username", r.username)
+	}
+
+	if r.password != "" {
+		t.Fatalf("expected password %s; got %s", "password", r.password)
+	}
+
+	if r.database != "db" {
+		t.Fatalf("expected database %s; got %s", "db", r.database)
+	}
+}
+
 func TestMetric(t *testing.T) {
 	r := &InfluxReporter{}
 

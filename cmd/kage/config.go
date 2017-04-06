@@ -3,15 +3,15 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
-	"os"
-
 	"github.com/msales/kage/kage"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-func readConfig() (*kage.Config, error) {
+func readConfig(args []string) (*kage.Config, error) {
 	var cmdConfig kage.Config
 	var configFiles []string
+
+	cmdConfig.Influx.Tags = map[string]string{}
 
 	app := kingpin.New("kage", "Kafka metrics").Version(Version).DefaultEnvars()
 	app.HelpFlag.Short('h')
@@ -23,6 +23,10 @@ func readConfig() (*kage.Config, error) {
 	app.Flag("log-file", "The path to the file to log to. Only works when --log is set to file").StringVar(&cmdConfig.LogFile)
 	app.Flag("log-level", "The log level to use. Options: 'debug', 'info', 'warn', 'error'").EnumVar(&cmdConfig.LogLevel, "debug", "info", "warn", "error")
 
+	app.Flag("brokers", "The kafka seed brokers connect to, Format: 'ip:port'").StringsVar(&cmdConfig.Kafka.Brokers)
+	app.Flag("ignore-topics", "The kafka topic patterns to ignore. This may contian wildcards").StringsVar(&cmdConfig.Kafka.Ignore.Topics)
+	app.Flag("ignore-groups", "The kafka consumer group patterns to ignore. This may contian wildcards").StringsVar(&cmdConfig.Kafka.Ignore.Groups)
+
 	app.Flag("reporters", "The reporters to use. Options: 'influx', 'stdout'").EnumsVar(&cmdConfig.Reporters, "influx", "stdout")
 	app.Flag("influx", "The DSN of the InfluxDB server to report to. Format: http://user:pass@ip:port/database'").StringVar(&cmdConfig.Influx.DSN)
 	app.Flag("influx-metric", "The measurement name to report statistics under").StringVar(&cmdConfig.Influx.Metric)
@@ -30,9 +34,9 @@ func readConfig() (*kage.Config, error) {
 
 	app.Flag("addr", "The address to bind to for the http server").StringVar(&cmdConfig.Server.Address)
 
-	kingpin.MustParse(app.Parse(os.Args[1:]))
+	kingpin.MustParse(app.Parse(args))
 
-	config := defaultConfig()
+	config := DefaultConfig()
 
 	for _, path := range configFiles {
 		fileConfig, err := readConfigFile(path)
@@ -40,10 +44,10 @@ func readConfig() (*kage.Config, error) {
 			return nil, err
 		}
 
-		config = mergeConfig(config, fileConfig)
+		config = kage.MergeConfig(config, fileConfig)
 	}
 
-	config = mergeConfig(config, &cmdConfig)
+	config = kage.MergeConfig(config, &cmdConfig)
 
 	return config, nil
 }
@@ -63,67 +67,20 @@ func readConfigFile(path string) (*kage.Config, error) {
 	return config, nil
 }
 
-func defaultConfig() *kage.Config {
+func DefaultConfig() *kage.Config {
 	return &kage.Config{
-		Log: "stdout",
+		Log:      "stdout",
 		LogLevel: "info",
 		Kafka: kage.KafkaConfig{
 			Brokers: []string{"127.0.0.1:9092"},
+			Ignore: kage.KafkaIgnoreConfig{
+				Topics: []string{},
+				Groups: []string{},
+			},
 		},
 		Reporters: []string{"stdout"},
+		Influx: kage.InfluxConfig{
+			Tags: map[string]string{},
+		},
 	}
-}
-
-func mergeConfig(a, b *kage.Config) *kage.Config {
-	var result kage.Config = *a
-
-	// Log
-	if b.Log != "" {
-		result.Log = b.Log
-	}
-
-	if b.LogFile != "" {
-		result.LogFile = b.LogFile
-	}
-
-	if b.LogLevel != "" {
-		result.LogLevel = b.LogLevel
-	}
-
-	// Kafka
-	if len(b.Kafka.Brokers) > 0 {
-		result.Kafka.Brokers = b.Kafka.Brokers
-	}
-
-	if len(b.Kafka.Ignore.Topics) > 0 {
-		result.Kafka.Ignore.Topics = b.Kafka.Ignore.Topics
-	}
-
-	if len(b.Kafka.Ignore.Groups) > 0 {
-		result.Kafka.Ignore.Groups = b.Kafka.Ignore.Groups
-	}
-
-	// Reporters
-	if len(b.Reporters) > 0 {
-		result.Reporters = b.Reporters
-	}
-
-	if b.Influx.DSN != "" {
-		result.Influx.DSN = b.Influx.DSN
-	}
-
-	if b.Influx.Metric != "" {
-		result.Influx.Metric = b.Influx.Metric
-	}
-
-	if len(b.Influx.Tags) > 0 {
-		result.Influx.Tags = b.Influx.Tags
-	}
-
-	// Server
-	if b.Server.Address != "" {
-		result.Server.Address = b.Server.Address
-	}
-
-	return &result
 }

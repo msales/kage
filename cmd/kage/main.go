@@ -17,7 +17,7 @@ import (
 
 func main() {
 	// Config
-	config, err := readConfig()
+	config, err := readConfig(os.Args[1:])
 	if err != nil {
 		panic(err)
 	}
