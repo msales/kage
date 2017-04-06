@@ -12,6 +12,7 @@ import (
 	"github.com/msales/kage/reporter"
 	"github.com/msales/kage/server"
 	"github.com/msales/kage/store"
+	"gopkg.in/alecthomas/kingpin.v2"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
@@ -19,7 +20,7 @@ func main() {
 	// Config
 	config, err := readConfig(os.Args[1:])
 	if err != nil {
-		panic(err)
+		kingpin.Fatalf("Error reading configuration: %s", err.Error())
 	}
 
 	// Logger
@@ -28,7 +29,7 @@ func main() {
 	// Store
 	memStore, err := store.New()
 	if err != nil {
-		panic(err)
+		kingpin.Fatalf("Error starting store: %s", err.Error())
 	}
 	defer memStore.Shutdown()
 
@@ -41,14 +42,14 @@ func main() {
 		kafka.OffsetChannel(memStore.OffsetCh),
 	)
 	if err != nil {
-		panic(err)
+		kingpin.Fatalf("Error connecting to Kafka: %s", err.Error())
 	}
 	defer kafkaClient.Shutdown()
 
 	// Reporters
 	reporters, err := createReporters(config, log)
 	if err != nil {
-		panic(err)
+		kingpin.Fatalf("Error starting reporters: %s", err.Error())
 	}
 	reportTicker := time.NewTicker(60 * time.Second)
 	defer reportTicker.Stop()
@@ -74,7 +75,7 @@ func main() {
 			log,
 		)
 		if err := srv.Start(); err != nil {
-			panic(err)
+			kingpin.Fatalf("Error starting server: %s", err.Error())
 		}
 		defer srv.Shutdown()
 	}
@@ -88,7 +89,7 @@ func main() {
 func createLogger(config *kage.Config) log15.Logger {
 	lvl, err := log15.LvlFromString(config.LogLevel)
 	if err != nil {
-		panic(err)
+		kingpin.Fatalf("Error creating logger: %s", err.Error())
 	}
 
 	h := log15.StreamHandler(os.Stderr, log15.LogfmtFormat())
