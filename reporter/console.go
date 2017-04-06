@@ -24,6 +24,10 @@ func NewConsoleReporter() (*ConsoleReporter, error) {
 func (r ConsoleReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 	for topic, partitions := range *o {
 		for partition, offset := range partitions {
+			if offset == nil {
+				continue
+			}
+
 			io.WriteString(
 				r.w,
 				fmt.Sprintf(
@@ -44,6 +48,10 @@ func (r ConsoleReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 	for group, topics := range *o {
 		for topic, partitions := range topics {
 			for partition, offset := range partitions {
+				if offset == nil {
+					continue
+				}
+
 				io.WriteString(
 					r.w,
 					fmt.Sprintf(

@@ -2,13 +2,13 @@ package reporter
 
 import (
 	"fmt"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/influxdata/influxdb/client/v2"
 	"github.com/msales/kage/kage"
 	"gopkg.in/inconshreveable/log15.v2"
-	"net/url"
-	"strings"
 )
 
 // InfluxReporterFunc represents a configuration function for InfluxReporter.
@@ -99,6 +99,10 @@ func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 
 	for topic, partitions := range *o {
 		for partition, offset := range partitions {
+			if offset == nil {
+				continue
+			}
+
 			tags := map[string]string{
 				"type":      "BrokerOffset",
 				"topic":     topic,
@@ -150,7 +154,7 @@ func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 		for topic, partitions := range topics {
 			for partition, offset := range partitions {
 				if offset == nil {
-					continue;
+					continue
 				}
 
 				tags := map[string]string{

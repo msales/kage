@@ -29,7 +29,7 @@ kage --config=example.json
 ## Advanced Installation
 
 There's systemd configuration magic in examples/systemd/.  
-Put the files in the appropriate directories on your machine (in case of Debian/Ubuntu that should be /lib/systemd/system and /lib/systemd/system-generators), create /etc/kage/, run ```systemctl daemon-reload``` and then you should get one service per configuration-file in /etc/kage/.
+Put the files in the appropriate directories on your machine (in case of Debian/Ubuntu that should be /lib/systemd/system and /lib/systemd/system-generators), remember to chmod 0755 the generator, create /etc/kage/, run ```systemctl daemon-reload``` and then you should get one service per configuration-file in /etc/kage/.
 
 ## Contributors
 
