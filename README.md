@@ -62,13 +62,14 @@ environment variables, configuration files.
 
 Environment variable names can be derived from the command line flags, prefixing them with ```KAGE_```
 and using uppercase changing - to _, e.g. ```--log-level``` becomes ```KAGE_LOG_LEVEL```.
+Where multiple command line flags are allowed, environment variable values should be separated by a new line character.
 
 ## Contributors
 
 We're supposed to tell you how to contribute to kage here.  
 Since this is github: You know the drill - open issues, fork, create PRs, ...
 
-## Todo
+## TODO
 
  * provide ansible-templates and examples
  * set up debian packaging
