@@ -17,7 +17,7 @@ func readConfig(args []string) (*kage.Config, error) {
 	app.HelpFlag.Short('h')
 	app.VersionFlag.Short('v')
 
-	app.Flag("config", "The path to the JSON configuration file. This will be overriden by any command line arguemnts").StringsVar(&configFiles)
+	app.Flag("config", "The path to the JSON configuration file. This will be overridden by any command line arguments").StringsVar(&configFiles)
 
 	app.Flag("log", "The type of log to use. Options: 'stdout', 'file'").EnumVar(&cmdConfig.Log, "stdout", "file")
 	app.Flag("log-file", "The path to the file to log to. Only works when --log is set to file").StringVar(&cmdConfig.LogFile)
@@ -30,7 +30,7 @@ func readConfig(args []string) (*kage.Config, error) {
 	app.Flag("reporters", "The reporters to use. Options: 'influx', 'stdout'").EnumsVar(&cmdConfig.Reporters, "influx", "stdout")
 	app.Flag("influx", "The DSN of the InfluxDB server to report to. Format: http://user:pass@ip:port/database'").StringVar(&cmdConfig.Influx.DSN)
 	app.Flag("influx-metric", "The measurement name to report statistics under").StringVar(&cmdConfig.Influx.Metric)
-	app.Flag("influx-tags", "Additional tags to add to the statistics.").PlaceHolder("KEY:VALUE").StringMapVar(&cmdConfig.Influx.Tags)
+	app.Flag("influx-tags", "Additional tags to add to the statistics").PlaceHolder("KEY:VALUE").StringMapVar(&cmdConfig.Influx.Tags)
 
 	app.Flag("addr", "The address to bind to for the http server").StringVar(&cmdConfig.Server.Address)
 
