@@ -40,7 +40,6 @@ Since this is github: You know the drill - open issues, fork, create PRs, ...
 
  * provide ansible-templates and examples
  * set up debian packaging
- * maybe provide minimal docker container
 
 ## License
 

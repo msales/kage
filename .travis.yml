@@ -20,8 +20,8 @@ before_install:
 script:
   - gvt restore
   - make ci
-  - make docker
   - $HOME/gopath/bin/goveralls -service=travis-ci
+  - make docker
 
 after_success:
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
