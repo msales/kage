@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"github.com/msales/kage/kage"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"io/ioutil"
 )
 
 func readConfig(args []string) (*kage.Config, error) {

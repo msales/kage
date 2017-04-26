@@ -6,7 +6,7 @@ type Config struct {
 	LogFile  string `json:"log-file"`
 	LogLevel string `json:"log-level"`
 
-	Kafka KafkaConfig  `json:"kafka"`
+	Kafka KafkaConfig `json:"kafka"`
 
 	Reporters []string     `json:"reporters"`
 	Influx    InfluxConfig `json:"influx,omitempty"`
