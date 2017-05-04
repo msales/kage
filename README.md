@@ -55,6 +55,7 @@ environment variables, configuration files.
 | --reporters | influx, stdout | Yes | The reporters to use. |
 | --influx | | No | The DSN of the InfluxDB server to report to. Format: http://user:pass@ip:port/database'. |
 | --influx-metric | | No | The measurement name to report statistics under. |
+| --influx-policy | | No | The retention policy to report statistics under. |
 | --influx-tags | | Yes | Additional tags to add to the statistics. Format: 'key:value' |
 | --addr | | No | The address to bind to for the http server. |
 

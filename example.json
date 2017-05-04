@@ -18,6 +18,7 @@
   "influx": {
     "dsn": "http://127.0.0.1:8086/metrics",
     "metric": "kafka",
+    "policy": "",
     "tags": {
       "cluster": "local",
       "environment": "local"
