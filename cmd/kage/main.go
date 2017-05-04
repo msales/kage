@@ -121,6 +121,7 @@ func createReporters(config *kage.Config, logger log15.Logger) (*reporter.Report
 			r, err := reporter.NewInfluxReporter(
 				reporter.DSN(u),
 				reporter.Metric(config.Influx.Metric),
+				reporter.Policy(config.Influx.Policy),
 				reporter.Tags(config.Influx.Tags),
 				reporter.Log(logger),
 			)

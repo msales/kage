@@ -42,6 +42,13 @@ func Metric(metric string) InfluxReporterFunc {
 	}
 }
 
+// return configures the retention policy name on an InfluxReporter.
+func Policy(policy string) InfluxReporterFunc {
+	return func(c *InfluxReporter) {
+		c.policy = policy
+	}
+}
+
 // Tags configures the additional tags on an InfluxReporter.
 func Tags(tags map[string]string) InfluxReporterFunc {
 	return func(c *InfluxReporter) {
@@ -57,6 +64,7 @@ type InfluxReporter struct {
 	database string
 
 	metric string
+	policy string
 	tags   map[string]string
 
 	client client.Client
@@ -88,8 +96,9 @@ func NewInfluxReporter(opts ...InfluxReporterFunc) (*InfluxReporter, error) {
 // ReportBrokerOffsets reports a snapshot of the broker offsets.
 func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 	pts, err := client.NewBatchPoints(client.BatchPointsConfig{
-		Database:  r.database,
-		Precision: "s",
+		Database:        r.database,
+		Precision:       "s",
+		RetentionPolicy: r.policy,
 	})
 	if err != nil {
 		r.log.Error(err.Error())

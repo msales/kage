@@ -66,6 +66,16 @@ func TestMetric(t *testing.T) {
 	}
 }
 
+func TestPolicy(t *testing.T) {
+	r := &InfluxReporter{}
+
+	Policy("foobar")(r)
+
+	if r.policy != "foobar" {
+		t.Fatalf("expected metric %s; got %s", "foobar", r.policy)
+	}
+}
+
 func TestTags(t *testing.T) {
 	r := &InfluxReporter{}
 

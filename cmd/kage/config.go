@@ -30,6 +30,7 @@ func readConfig(args []string) (*kage.Config, error) {
 	app.Flag("reporters", "The reporters to use. Options: 'influx', 'stdout'").EnumsVar(&cmdConfig.Reporters, "influx", "stdout")
 	app.Flag("influx", "The DSN of the InfluxDB server to report to. Format: 'http://user:pass@ip:port/database'").StringVar(&cmdConfig.Influx.DSN)
 	app.Flag("influx-metric", "The measurement name to report statistics under").StringVar(&cmdConfig.Influx.Metric)
+	app.Flag("influx-policy", "The retention policy to report statistics under").Default("").StringVar(&cmdConfig.Influx.Policy)
 	app.Flag("influx-tags", "Additional tags to add to the statistics").PlaceHolder("KEY:VALUE").StringMapVar(&cmdConfig.Influx.Tags)
 
 	app.Flag("addr", "The address to bind to for the http server").StringVar(&cmdConfig.Server.Address)

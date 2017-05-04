@@ -30,6 +30,7 @@ type KafkaIgnoreConfig struct {
 type InfluxConfig struct {
 	DSN    string            `json:"dsn"`
 	Metric string            `json:"metric"`
+	Policy string            `json:"policy"`
 	Tags   map[string]string `json:"tags"`
 }
 
