@@ -1,8 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,37 +16,20 @@ import (
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
-var (
-	configPath = kingpin.Flag("config", "The path to the configuration file").Default("./kage.json").String()
-)
-
 func main() {
-	kingpin.Version(Version)
-	kingpin.Parse()
-
 	// Config
-	config, err := readConfig(*configPath)
+	config, err := readConfig(os.Args[1:])
 	if err != nil {
-		panic(err)
-	}
-
-	lvl, err := log15.LvlFromString(config.Log.Level)
-	if err != nil {
-		panic(err)
+		kingpin.Fatalf("Error reading configuration: %s", err.Error())
 	}
 
 	// Logger
-	log := log15.New()
-	log.SetHandler(log15.StreamHandler(os.Stderr, log15.LogfmtFormat()))
-	log.SetHandler(log15.LvlFilterHandler(
-		lvl,
-		log15.Must.FileHandler(config.Log.Path, log15.LogfmtFormat()),
-	))
+	log := createLogger(config)
 
 	// Store
 	memStore, err := store.New()
 	if err != nil {
-		panic(err)
+		kingpin.Fatalf("Error starting store: %s", err.Error())
 	}
 	defer memStore.Shutdown()
 
@@ -60,14 +42,14 @@ func main() {
 		kafka.OffsetChannel(memStore.OffsetCh),
 	)
 	if err != nil {
-		panic(err)
+		kingpin.Fatalf("Error connecting to Kafka: %s", err.Error())
 	}
 	defer kafkaClient.Shutdown()
 
 	// Reporters
-	reporters, err := createReporters(config.Reporters, log)
+	reporters, err := createReporters(config, log)
 	if err != nil {
-		panic(err)
+		kingpin.Fatalf("Error starting reporters: %s", err.Error())
 	}
 	reportTicker := time.NewTicker(60 * time.Second)
 	defer reportTicker.Stop()
@@ -82,69 +64,80 @@ func main() {
 	}()
 
 	// Server
-	services := []server.Service{kafkaClient}
-	for _, r := range *reporters {
-		services = append(services, r)
+	if config.Server.Address != "" {
+		services := []server.Service{kafkaClient}
+		for _, r := range *reporters {
+			services = append(services, r)
+		}
+		srv := server.New(
+			config.Server.Address,
+			services,
+			log,
+		)
+		if err := srv.Start(); err != nil {
+			kingpin.Fatalf("Error starting server: %s", err.Error())
+		}
+		defer srv.Shutdown()
 	}
-	srv := server.New(
-		config.Server.Address,
-		services,
-		log,
-	)
-	if err := srv.Start(); err != nil {
-		panic(err)
-	}
-	defer srv.Shutdown()
 
 	// Wait for quit
 	quit := listenForSignals()
 	<-quit
 }
 
-// readConfig reads the configuration from the given path
-func readConfig(path string) (*kage.Config, error) {
-	file, err := ioutil.ReadFile(path)
+// createLogger creates a new logger from config
+func createLogger(config *kage.Config) log15.Logger {
+	lvl, err := log15.LvlFromString(config.LogLevel)
 	if err != nil {
-		return nil, err
+		kingpin.Fatalf("Error creating logger: %s", err.Error())
 	}
 
-	config := &kage.Config{}
-	json.Unmarshal(file, config)
+	h := log15.StreamHandler(os.Stderr, log15.LogfmtFormat())
+	if config.Log == "file" {
+		h = log15.Must.FileHandler(config.LogFile, log15.LogfmtFormat())
+	}
 
-	return config, nil
+	log := log15.New()
+	log.SetHandler(log15.LvlFilterHandler(
+		lvl,
+		h,
+	))
+
+	return log
 }
 
 // createReporters creates reporters from the config
-func createReporters(reporters kage.Reporters, logger log15.Logger) (*reporter.Reporters, error) {
+func createReporters(config *kage.Config, logger log15.Logger) (*reporter.Reporters, error) {
 	rs := &reporter.Reporters{}
 
-	for t, config := range reporters {
-		switch t {
+	for _, name := range config.Reporters {
+		switch name {
 		case "influx":
-			influxConfig := kage.InfluxReporterConfig{}
-			json.Unmarshal(config, &influxConfig)
+			u, err := url.Parse(config.Influx.DSN)
+			if err != nil {
+				return nil, err
+			}
 
 			r, err := reporter.NewInfluxReporter(
-				reporter.Credentials(influxConfig.Address, influxConfig.Username, influxConfig.Password),
-				reporter.Database(influxConfig.Database),
-				reporter.Metric(influxConfig.Metric),
-				reporter.Tags(influxConfig.Tags),
+				reporter.DSN(u),
+				reporter.Metric(config.Influx.Metric),
+				reporter.Tags(config.Influx.Tags),
 				reporter.Log(logger),
 			)
 			if err != nil {
 				return nil, err
 			}
 
-			rs.Add(t, r)
+			rs.Add(name, r)
 			break
 
-		case "console":
+		case "stdout":
 			r, err := reporter.NewConsoleReporter()
 			if err != nil {
 				return nil, err
 			}
 
-			rs.Add(t, r)
+			rs.Add(name, r)
 		}
 	}
 

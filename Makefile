@@ -1,4 +1,4 @@
-.PHONY: build ci test vet
+.PHONY: build ci test vet docker
 
 build:
 	go build -o ./dist/kage ./cmd/kage
@@ -17,3 +17,7 @@ vet:
 bump:
 	pip install --upgrade bumpversion
 	bumpversion patch
+
+docker:
+	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-s' -o ./dist/kage_docker ./cmd/kage
+	docker build -t kage .

@@ -2,6 +2,8 @@ package reporter
 
 import (
 	"fmt"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/influxdata/influxdb/client/v2"
@@ -13,18 +15,16 @@ import (
 type InfluxReporterFunc func(c *InfluxReporter)
 
 // Credentials configures the credentials on an InfluxReporter.
-func Credentials(addr, username, password string) InfluxReporterFunc {
-	return func(c *InfluxReporter) {
-		c.addr = addr
-		c.username = username
-		c.password = password
+func DSN(dsn *url.URL) InfluxReporterFunc {
+	if dsn.User == nil {
+		dsn.User = &url.Userinfo{}
 	}
-}
 
-// Database configures the database on an InfluxReporter.
-func Database(database string) InfluxReporterFunc {
 	return func(c *InfluxReporter) {
-		c.database = database
+		c.addr = dsn.Scheme + "://" + dsn.Host
+		c.username = dsn.User.Username()
+		c.password, _ = dsn.User.Password()
+		c.database = strings.Trim(dsn.Path, "/")
 	}
 }
 

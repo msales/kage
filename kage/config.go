@@ -1,49 +1,95 @@
 package kage
 
-import "encoding/json"
-
 // Config represents the application configuration.
 type Config struct {
-	Log        LogConfig `json:"log"`
-	LogMetrics bool      `json:"log-metrics"`
+	Log      string `json:"log"`
+	LogFile  string `json:"log-file"`
+	LogLevel string `json:"log-level"`
 
-	Kafka     KafkaConfig  `json:"kafka"`
-	Reporters Reporters    `json:"reporters"`
-	Server    ServerConfig `json:"server"`
-}
+	Kafka KafkaConfig `json:"kafka"`
 
-// LogConfig represents the configuration for logging.
-type LogConfig struct {
-	Path  string `json:"path"`
-	Level string `json:"level"`
+	Reporters []string     `json:"reporters"`
+	Influx    InfluxConfig `json:"influx,omitempty"`
+
+	Server ServerConfig `json:"server,omitempty"`
 }
 
 // KafkaConfig represents the configuration for Kafka.
 type KafkaConfig struct {
 	Brokers []string          `json:"brokers"`
-	Ignore  KafkaIgnoreConfig `json:"ignore"`
+	Ignore  KafkaIgnoreConfig `json:"ignore,omitempty"`
 }
 
 // KafkaIgnoreConfig represents the configuration for ignored topics and groups.
 type KafkaIgnoreConfig struct {
-	Topics []string `json:"topics"`
-	Groups []string `json:"groups"`
+	Topics []string `json:"topics,omitempty"`
+	Groups []string `json:"groups,omitempty"`
+}
+
+// InfluxConfig represents the configuration for the influx reporter.
+type InfluxConfig struct {
+	DSN    string            `json:"dsn"`
+	Metric string            `json:"metric"`
+	Tags   map[string]string `json:"tags"`
 }
 
 // ServerConfig represents the configuration for the server.
 type ServerConfig struct {
-	Address string `json:"address"`
+	Address string `json:"address,omitempty"`
 }
 
-// Reporters represents the configuration for the reporters.
-type Reporters map[string]json.RawMessage
+// MergeConfig  merges two configurations together to make a single new
+// configuration.
+func MergeConfig(a, b *Config) *Config {
+	var result Config = *a
 
-// InfluxReporterConfig represents the configuration for the influx reporter.
-type InfluxReporterConfig struct {
-	Address  string            `json:"address"`
-	Username string            `json:"username"`
-	Password string            `json:"password"`
-	Database string            `json:"database"`
-	Metric   string            `json:"metric"`
-	Tags     map[string]string `json:"tags"`
+	// Log
+	if b.Log != "" {
+		result.Log = b.Log
+	}
+
+	if b.LogFile != "" {
+		result.LogFile = b.LogFile
+	}
+
+	if b.LogLevel != "" {
+		result.LogLevel = b.LogLevel
+	}
+
+	// Kafka
+	if len(b.Kafka.Brokers) > 0 {
+		result.Kafka.Brokers = b.Kafka.Brokers
+	}
+
+	if len(b.Kafka.Ignore.Topics) > 0 {
+		result.Kafka.Ignore.Topics = b.Kafka.Ignore.Topics
+	}
+
+	if len(b.Kafka.Ignore.Groups) > 0 {
+		result.Kafka.Ignore.Groups = b.Kafka.Ignore.Groups
+	}
+
+	// Reporters
+	if len(b.Reporters) > 0 {
+		result.Reporters = b.Reporters
+	}
+
+	if b.Influx.DSN != "" {
+		result.Influx.DSN = b.Influx.DSN
+	}
+
+	if b.Influx.Metric != "" {
+		result.Influx.Metric = b.Influx.Metric
+	}
+
+	if len(b.Influx.Tags) > 0 {
+		result.Influx.Tags = b.Influx.Tags
+	}
+
+	// Server
+	if b.Server.Address != "" {
+		result.Server.Address = b.Server.Address
+	}
+
+	return &result
 }

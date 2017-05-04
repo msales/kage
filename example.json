@@ -1,8 +1,7 @@
 {
-  "log": {
-    "path": "./kage.log",
-    "level": "debug"
-  },
+  "log": "file",
+  "log-file": "./kage.log",
+  "log-level": "debug",
   "kafka": {
     "brokers": [
       "127.0.0.1:9092"
@@ -12,19 +11,17 @@
       "groups": []
     }
   },
-  "reporters": {
-    "influx": {
-      "address": "http://127.0.0.1:8086",
-      "username": "",
-      "password": "",
-      "database": "metrics",
-      "metric": "kafka",
-      "tags": {
-        "cluster": "local",
-        "environment": "local"
-      }
-    },
-    "console": {}
+  "reporters": [
+    "influx",
+    "stdout"
+  ],
+  "influx": {
+    "dsn": "http://127.0.0.1:8086/metrics",
+    "metric": "kafka",
+    "tags": {
+      "cluster": "local",
+      "environment": "local"
+    }
   },
   "server": {
     "address": "127.0.0.1:8888"
