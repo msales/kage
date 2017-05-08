@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/Shopify/sarama"
-	"github.com/msales/kage/kage"
-	"gopkg.in/inconshreveable/log15.v2"
+	"github.com/msales/kage"
+	"github.com/msales/kage/testutil"
 )
 
 func TestClient_IsHealthy(t *testing.T) {
@@ -58,7 +58,7 @@ func TestClient_getOffsets(t *testing.T) {
 	c := &Client{
 		client:   kafka,
 		offsetCh: make(chan *kage.PartitionOffset, 100),
-		log:      log15.New(),
+		log:      testutil.Logger,
 	}
 
 	c.getOffsets()
@@ -109,7 +109,7 @@ func TestClient_getConsumerOffsets(t *testing.T) {
 	c := &Client{
 		client:   kafka,
 		offsetCh: make(chan *kage.PartitionOffset, 100),
-		log:      log15.New(),
+		log:      testutil.Logger,
 	}
 
 	c.getConsumerOffsets()

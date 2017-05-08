@@ -1,6 +1,6 @@
 package reporter
 
-import "github.com/msales/kage/kage"
+import "github.com/msales/kage"
 
 // Reporters represents a set of reporters.
 type Reporters map[string]Reporter

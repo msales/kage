@@ -1,15 +1,16 @@
-package store
+package store_test
 
 import (
 	"testing"
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/msales/kage/kage"
+	"github.com/msales/kage"
+	"github.com/msales/kage/store"
 )
 
 func TestMemoryStore_BrokerOffsets(t *testing.T) {
-	memStore, err := New()
+	memStore, err := store.New()
 	if err != nil {
 		t.Error(err)
 		return
@@ -59,7 +60,7 @@ func TestMemoryStore_BrokerOffsets(t *testing.T) {
 }
 
 func TestMemoryStore_ConsumerOffsets(t *testing.T) {
-	memStore, err := New()
+	memStore, err := store.New()
 	if err != nil {
 		t.Error(err)
 		return
@@ -107,7 +108,7 @@ func TestMemoryStore_ConsumerOffsets(t *testing.T) {
 }
 
 func TestMemoryStore_ConsumerOffsetsZeroOffset(t *testing.T) {
-	memStore, err := New()
+	memStore, err := store.New()
 	if err != nil {
 		t.Error(err)
 		return
@@ -155,7 +156,7 @@ func TestMemoryStore_ConsumerOffsetsZeroOffset(t *testing.T) {
 }
 
 func TestMemoryStore_CleanConsumerOffsets(t *testing.T) {
-	memStore, err := New()
+	memStore, err := store.New()
 	if err != nil {
 		t.Error(err)
 		return
@@ -180,7 +181,7 @@ func TestMemoryStore_CleanConsumerOffsets(t *testing.T) {
 
 	memStore.CleanConsumerOffsets()
 
-	if len(memStore.offsets.consumer) > 0 {
+	if len(memStore.ConsumerOffsets()) > 0 {
 		t.Fatal("expected group to be cleaned; still exists")
 	}
 }

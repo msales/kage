@@ -1,7 +1,7 @@
 package kafka
 
 import (
-	"github.com/msales/kage/kage"
+	"github.com/msales/kage"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 

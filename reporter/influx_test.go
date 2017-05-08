@@ -5,9 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/msales/kage/kage"
+	"github.com/msales/kage"
 	"github.com/msales/kage/testutil/mocks"
 	"gopkg.in/inconshreveable/log15.v2"
+	"github.com/msales/kage/testutil"
 )
 
 func TestDSN(t *testing.T) {
@@ -98,13 +99,10 @@ func TestLog(t *testing.T) {
 }
 
 func TestInfluxReporter_ReportBrokerOffsets(t *testing.T) {
-	log := log15.New()
-	log.SetHandler(log15.DiscardHandler())
-
 	c := &mocks.MockInfluxClient{Connected: true}
 	r := &InfluxReporter{
 		client: c,
-		log:    log,
+		log:    testutil.Logger,
 	}
 
 	offsets := &kage.BrokerOffsets{

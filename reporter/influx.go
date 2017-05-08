@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/influxdata/influxdb/client/v2"
-	"github.com/msales/kage/kage"
+	"github.com/msales/kage"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 

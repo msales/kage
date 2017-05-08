@@ -1,14 +1,16 @@
 package main
 
 import (
+	"net"
+	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/msales/kage"
 	"github.com/msales/kage/kafka"
-	"github.com/msales/kage/kage"
 	"github.com/msales/kage/reporter"
 	"github.com/msales/kage/server"
 	"github.com/msales/kage/store"
@@ -69,15 +71,12 @@ func main() {
 		for _, r := range *reporters {
 			services = append(services, r)
 		}
-		srv := server.New(
-			config.Server.Address,
-			services,
-			log,
-		)
-		if err := srv.Start(); err != nil {
-			kingpin.Fatalf("Error starting server: %s", err.Error())
+
+		ln, err := runServer(config.Server.Address, services, log)
+		if err != nil {
+			kingpin.Fatalf("%s", err.Error())
 		}
-		defer srv.Shutdown()
+		defer ln.Close()
 	}
 
 	// Wait for quit
@@ -143,6 +142,29 @@ func createReporters(config *kage.Config, logger log15.Logger) (*reporter.Report
 	}
 
 	return rs, nil
+}
+
+// Create and start the http server
+func runServer(addr string, svcs []server.Service, logger log15.Logger) (*net.TCPListener, error) {
+	bind, err := net.ResolveTCPAddr("tcp", addr)
+	if err != nil {
+		panic(err)
+	}
+
+	ln, err := net.ListenTCP("tcp", bind)
+	if err != nil {
+		return nil, err
+	}
+
+	srv := server.New(svcs, logger)
+
+	go func() {
+		if err := http.Serve(ln, srv); err != nil {
+			logger.Crit(err.Error())
+		}
+	}()
+
+	return ln, nil
 }
 
 // Wait for SIGTERM to end the application.

@@ -1,5 +1,5 @@
 .idea/
-kage.log
+/kage*
 dist/
 vendor/*
 !vendor/manifest

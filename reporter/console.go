@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/msales/kage/kage"
+	"github.com/msales/kage"
 )
 
 // ConsoleReporter represents a console reporter.

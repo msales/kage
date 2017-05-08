@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/msales/kage/kage"
+	"github.com/msales/kage"
 )
 
 func TestConsoleReporter_ReportBrokerOffsets(t *testing.T) {

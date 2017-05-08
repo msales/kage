@@ -1,14 +1,15 @@
-package reporter
+package reporter_test
 
 import (
 	"testing"
 
-	"github.com/msales/kage/kage"
+	"github.com/msales/kage"
+	"github.com/msales/kage/reporter"
 	"github.com/msales/kage/testutil/mocks"
 )
 
 func TestReporters_Add(t *testing.T) {
-	rs := Reporters{}
+	rs := reporter.Reporters{}
 
 	rs.Add("test1", &mocks.MockReporter{})
 	rs.Add("test2", &mocks.MockReporter{})
@@ -21,7 +22,7 @@ func TestReporters_Add(t *testing.T) {
 }
 
 func TestReporters_ReportBrokerOffsets(t *testing.T) {
-	rs := Reporters{}
+	rs := reporter.Reporters{}
 	rs.Add("test1", &mocks.MockReporter{})
 	rs.Add("test2", &mocks.MockReporter{})
 
@@ -37,7 +38,7 @@ func TestReporters_ReportBrokerOffsets(t *testing.T) {
 }
 
 func TestReporters_ReportConsumerOffsets(t *testing.T) {
-	rs := Reporters{}
+	rs := reporter.Reporters{}
 	rs.Add("test1", &mocks.MockReporter{})
 	rs.Add("test2", &mocks.MockReporter{})
 
