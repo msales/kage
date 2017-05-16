@@ -3,6 +3,7 @@ package reporter
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
@@ -11,9 +12,7 @@ func TestDatabase(t *testing.T) {
 
 	Database("test")(r)
 
-	if r.database != "test" {
-		t.Fatalf("expected database %s; got %s", "test", r.database)
-	}
+	assert.Equal(t, r.database, "test")
 }
 
 func TestMetric(t *testing.T) {
@@ -21,9 +20,7 @@ func TestMetric(t *testing.T) {
 
 	Metric("kafka")(r)
 
-	if r.metric != "kafka" {
-		t.Fatalf("expected metric %s; got %s", "kafka", r.metric)
-	}
+	assert.Equal(t, r.metric, "kafka",)
 }
 
 func TestPolicy(t *testing.T) {
@@ -31,9 +28,7 @@ func TestPolicy(t *testing.T) {
 
 	Policy("foobar")(r)
 
-	if r.policy != "foobar" {
-		t.Fatalf("expected metric %s; got %s", "foobar", r.policy)
-	}
+	assert.Equal(t, r.policy, "foobar")
 }
 
 func TestTags(t *testing.T) {
@@ -41,9 +36,7 @@ func TestTags(t *testing.T) {
 
 	Tags(map[string]string{"foo": "bar"})(r)
 
-	if r.tags["foo"] != "bar" {
-		t.Fatal("expected tags not found")
-	}
+	assert.Equal(t, r.tags["foo"], "bar")
 }
 
 func TestLog(t *testing.T) {
@@ -52,7 +45,5 @@ func TestLog(t *testing.T) {
 
 	Log(log)(r)
 
-	if r.log != log {
-		t.Fatal("expected log not found")
-	}
+	assert.Equal(t, r.log, log)
 }

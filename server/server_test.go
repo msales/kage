@@ -8,6 +8,7 @@ import (
 	"github.com/msales/kage/server"
 	"github.com/msales/kage/testutil"
 	"github.com/msales/kage/testutil/mocks"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestServer_HealthPass(t *testing.T) {
@@ -23,9 +24,7 @@ func TestServer_HealthPass(t *testing.T) {
 	srv := server.New([]server.Service{svc}, testutil.Logger)
 	srv.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
+	assert.Equal(t, rr.Code, http.StatusOK)
 }
 
 func TestServer_HealthFail(t *testing.T) {
@@ -41,7 +40,5 @@ func TestServer_HealthFail(t *testing.T) {
 	srv := server.New([]server.Service{svc}, testutil.Logger)
 	srv.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != http.StatusInternalServerError {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusInternalServerError)
-	}
+	assert.Equal(t, rr.Code, http.StatusInternalServerError)
 }

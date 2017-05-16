@@ -2,8 +2,9 @@ package mocks
 
 import (
 	"errors"
-	"github.com/influxdata/influxdb/client/v2"
 	"time"
+
+	"github.com/influxdata/influxdb/client/v2"
 )
 
 // MockInfluxClient represents a mock InfluxDB client.

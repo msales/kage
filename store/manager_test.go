@@ -7,14 +7,13 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/msales/kage"
 	"github.com/msales/kage/store"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMemoryStore_BrokerOffsets(t *testing.T) {
 	memStore, err := store.New()
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	assert.NoError(t, err)
+
 	defer memStore.Shutdown()
 
 	memStore.AddOffset(&kage.PartitionOffset{
@@ -61,10 +60,8 @@ func TestMemoryStore_BrokerOffsets(t *testing.T) {
 
 func TestMemoryStore_ConsumerOffsets(t *testing.T) {
 	memStore, err := store.New()
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	assert.NoError(t, err)
+
 	defer memStore.Shutdown()
 
 	memStore.AddOffset(&kage.PartitionOffset{
@@ -109,10 +106,8 @@ func TestMemoryStore_ConsumerOffsets(t *testing.T) {
 
 func TestMemoryStore_ConsumerOffsetsZeroOffset(t *testing.T) {
 	memStore, err := store.New()
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	assert.NoError(t, err)
+
 	defer memStore.Shutdown()
 
 	memStore.AddOffset(&kage.PartitionOffset{
@@ -157,10 +152,8 @@ func TestMemoryStore_ConsumerOffsetsZeroOffset(t *testing.T) {
 
 func TestMemoryStore_CleanConsumerOffsets(t *testing.T) {
 	memStore, err := store.New()
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	assert.NoError(t, err)
+
 	defer memStore.Shutdown()
 
 	memStore.AddOffset(&kage.PartitionOffset{

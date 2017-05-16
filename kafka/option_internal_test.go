@@ -1,10 +1,10 @@
 package kafka
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/msales/kage"
+	"github.com/stretchr/testify/assert"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
@@ -14,9 +14,7 @@ func TestBrokers(t *testing.T) {
 
 	Brokers(brokers)(c)
 
-	if !reflect.DeepEqual(c.brokers, brokers) {
-		t.Fatal("expected brokers not found")
-	}
+	assert.Equal(t, brokers, c.brokers)
 }
 
 func TestIgnoreGroups(t *testing.T) {
@@ -25,9 +23,7 @@ func TestIgnoreGroups(t *testing.T) {
 
 	IgnoreGroups(i)(c)
 
-	if !reflect.DeepEqual(c.ignoreGroups, i) {
-		t.Fatal("expected ignore groups not found")
-	}
+	assert.Equal(t, i, c.ignoreGroups)
 }
 
 func TestIgnoreTopics(t *testing.T) {
@@ -36,9 +32,7 @@ func TestIgnoreTopics(t *testing.T) {
 
 	IgnoreTopics(i)(c)
 
-	if !reflect.DeepEqual(c.ignoreTopics, i) {
-		t.Fatal("expected ignore topics not found")
-	}
+	assert.Equal(t, i, c.ignoreTopics)
 }
 
 func TestLog(t *testing.T) {
@@ -47,9 +41,7 @@ func TestLog(t *testing.T) {
 
 	Log(log)(c)
 
-	if c.log != log {
-		t.Fatal("expected log not found")
-	}
+	assert.Equal(t, log, c.log)
 }
 
 func TestOffsetChannel(t *testing.T) {
@@ -58,7 +50,5 @@ func TestOffsetChannel(t *testing.T) {
 
 	OffsetChannel(ch)(c)
 
-	if c.offsetCh != ch {
-		t.Fatal("expected offset channel not found")
-	}
+	assert.Equal(t, ch, c.offsetCh)
 }

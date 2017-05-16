@@ -3,8 +3,8 @@ package main
 import (
 	"io/ioutil"
 	"os"
-	"reflect"
 	"testing"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestReadConfig_Cli(t *testing.T) {
@@ -19,28 +19,17 @@ func TestReadConfig_Cli(t *testing.T) {
 	}
 
 	config, err := readConfig(args)
-	if err != nil {
-		t.Fatalf("err: %v", err)
-	}
+	assert.NoError(t, err)
 
-	if config.Log != "file" {
-		t.Fatalf("expected file; got %v", config.Log)
-	}
-
-	if !reflect.DeepEqual(config.Reporters, []string{"stdout", "influx"}) {
-		t.Fatalf("expected stdout,influx; got %v", config.Reporters)
-	}
-
-	if !reflect.DeepEqual(config.Influx.Tags, map[string]string{"foo": "bar", "bat": "baz"}) {
-		t.Fatalf("expected foo:bar,bat:baz; got %v", config.Influx.Tags)
-	}
+	assert.Equal(t, "file", config.Log)
+	assert.Equal(t, []string{"stdout", "influx"}, config.Reporters)
+	assert.Equal(t, map[string]string{"foo": "bar", "bat": "baz"}, config.Influx.Tags)
 }
 
 func TestReadConfig_CliAndFile(t *testing.T) {
 	tf, err := ioutil.TempFile("", "kage")
-	if err != nil {
-		t.Fatalf("err: %s", err)
-	}
+	assert.NoError(t, err)
+
 	tf.Write([]byte(`{"log-level":"warn"}`))
 	tf.Close()
 	defer os.Remove(tf.Name())
@@ -57,64 +46,41 @@ func TestReadConfig_CliAndFile(t *testing.T) {
 	}
 
 	config, err := readConfig(args)
-	if err != nil {
-		t.Fatalf("err: %v", err)
-	}
+	assert.NoError(t, err)
 
-	if config.Log != "file" {
-		t.Fatalf("expected file; got %v", config.Log)
-	}
-
-	if config.LogLevel != "warn" {
-		t.Fatalf("expected warn; got %v", config.LogLevel)
-	}
-
-	if !reflect.DeepEqual(config.Reporters, []string{"stdout", "influx"}) {
-		t.Fatalf("expected stdout,influx; got %v", config.Reporters)
-	}
-
-	if !reflect.DeepEqual(config.Influx.Tags, map[string]string{"foo": "bar", "bat": "baz"}) {
-		t.Fatalf("expected foo:bar,bat:baz; got %v", config.Influx.Tags)
-	}
+	assert.Equal(t, "file", config.Log)
+	assert.Equal(t, "warn", config.LogLevel)
+	assert.Equal(t, []string{"stdout", "influx"}, config.Reporters)
+	assert.Equal(t, map[string]string{"foo": "bar", "bat": "baz"}, config.Influx.Tags)
 }
 
 func TestReadConfigFile(t *testing.T) {
 	tf, err := ioutil.TempFile("", "kage")
-	if err != nil {
-		t.Fatalf("err: %s", err)
-	}
+	assert.NoError(t, err)
+
 	tf.Write([]byte(`{"log":"file"}`))
 	tf.Close()
 	defer os.Remove(tf.Name())
 
 	config, err := readConfigFile(tf.Name())
-	if err != nil {
-		t.Fatalf("err: %s", err)
-	}
+	assert.NoError(t, err)
 
-	if config.Log != "file" {
-		t.Fatalf("config not parsed correctly: %v", config)
-	}
+	assert.Equal(t, "file", config.Log)
 }
 
 func TestReadConfigFile_BadPath(t *testing.T) {
 	_, err := readConfigFile("/foo/bar")
-	if err == nil {
-		t.Fatal("should have error")
-	}
+	assert.Error(t, err)
 }
 
 func TestReadConfigFile_BadFile(t *testing.T) {
 	tf, err := ioutil.TempFile("", "kage")
-	if err != nil {
-		t.Fatalf("err: %s", err)
-	}
+	assert.NoError(t, err)
+
 	tf.Write([]byte(`{"log":1}`))
 	tf.Close()
 	defer os.Remove(tf.Name())
 
 	_, err = readConfigFile(tf.Name())
-	if err == nil {
-		t.Fatal("should have error")
-	}
+	assert.Error(t, err)
 }

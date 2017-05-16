@@ -8,6 +8,7 @@ import (
 	"github.com/msales/kage/reporter"
 	"github.com/msales/kage/testutil"
 	"github.com/msales/kage/testutil/mocks"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestInfluxReporter_ReportBrokerOffsets(t *testing.T) {
@@ -27,9 +28,7 @@ func TestInfluxReporter_ReportBrokerOffsets(t *testing.T) {
 	}
 	r.ReportBrokerOffsets(offsets)
 
-	if len(c.BatchPoints.Points()) != 1 {
-		t.Fatalf("expected %d point(s); got %d", 1, len(c.BatchPoints.Points()))
-	}
+	assert.Len(t, c.BatchPoints.Points(), 1)
 }
 
 func TestInfluxReporter_ReportConsumerOffsets(t *testing.T) {
@@ -51,9 +50,7 @@ func TestInfluxReporter_ReportConsumerOffsets(t *testing.T) {
 	}
 	r.ReportConsumerOffsets(offsets)
 
-	if len(c.BatchPoints.Points()) != 1 {
-		t.Fatalf("expected %d point(s); got %d", 1, len(c.BatchPoints.Points()))
-	}
+	assert.Len(t, c.BatchPoints.Points(), 1)
 }
 
 func TestInfluxReporter_IsHealthy(t *testing.T) {
@@ -62,13 +59,9 @@ func TestInfluxReporter_IsHealthy(t *testing.T) {
 		reporter.Log(testutil.Logger),
 	)
 
-	if !r.IsHealthy() {
-		t.Fatal("expected health to pass")
-	}
+	assert.True(t, r.IsHealthy())
 
 	c.Close()
 
-	if r.IsHealthy() {
-		t.Fatal("expected health to fail")
-	}
+	assert.False(t, r.IsHealthy())
 }

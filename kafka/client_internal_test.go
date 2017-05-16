@@ -6,6 +6,7 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/msales/kage"
 	"github.com/msales/kage/testutil"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestClient_IsHealthy(t *testing.T) {
@@ -25,9 +26,7 @@ func TestClient_IsHealthy(t *testing.T) {
 
 	c := &Client{client: kafka}
 
-	if !c.IsHealthy() {
-		t.Fatal("Expected health to pass")
-	}
+	assert.True(t, c.IsHealthy())
 
 	seedBroker.Close()
 	leader.Close()
@@ -51,9 +50,7 @@ func TestClient_getOffsets(t *testing.T) {
 	leader.Returns(newestOffsetResponse)
 
 	kafka, err := sarama.NewClient([]string{seedBroker.Addr()}, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	c := &Client{
 		client:   kafka,
@@ -63,9 +60,7 @@ func TestClient_getOffsets(t *testing.T) {
 
 	c.getOffsets()
 
-	if len(c.offsetCh) != 2 {
-		t.Fatal("not enough offsets in offset channel")
-	}
+	assert.Len(t, c.offsetCh, 2)
 
 	seedBroker.Close()
 	leader.Close()
@@ -102,9 +97,7 @@ func TestClient_getConsumerOffsets(t *testing.T) {
 	conf := sarama.NewConfig()
 	conf.Version = sarama.V0_10_1_0
 	kafka, err := sarama.NewClient([]string{seedBroker.Addr()}, conf)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	c := &Client{
 		client:   kafka,
@@ -114,9 +107,7 @@ func TestClient_getConsumerOffsets(t *testing.T) {
 
 	c.getConsumerOffsets()
 
-	if len(c.offsetCh) != 1 {
-		t.Fatal("not enough offsets in offset channel")
-	}
+	assert.Len(t, c.offsetCh, 1)
 
 	seedBroker.Close()
 	leader.Close()
