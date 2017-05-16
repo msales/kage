@@ -2,8 +2,6 @@ package reporter
 
 import (
 	"fmt"
-	"net/url"
-	"strings"
 	"time"
 
 	"github.com/influxdata/influxdb/client/v2"
@@ -14,17 +12,24 @@ import (
 // InfluxReporterFunc represents a configuration function for InfluxReporter.
 type InfluxReporterFunc func(c *InfluxReporter)
 
-// Credentials configures the credentials on an InfluxReporter.
-func DSN(dsn *url.URL) InfluxReporterFunc {
-	if dsn.User == nil {
-		dsn.User = &url.Userinfo{}
-	}
+//// Credentials configures the credentials on an InfluxReporter.
+//func DSN(dsn *url.URL) InfluxReporterFunc {
+//	if dsn.User == nil {
+//		dsn.User = &url.Userinfo{}
+//	}
+//
+//	return func(c *InfluxReporter) {
+//		c.addr = dsn.Scheme + "://" + dsn.Host
+//		c.username = dsn.User.Username()
+//		c.password, _ = dsn.User.Password()
+//		c.database = strings.Trim(dsn.Path, "/")
+//	}
+//}
 
+// Database configures the database on an InfluxReporter.
+func Database(db string) InfluxReporterFunc {
 	return func(c *InfluxReporter) {
-		c.addr = dsn.Scheme + "://" + dsn.Host
-		c.username = dsn.User.Username()
-		c.password, _ = dsn.User.Password()
-		c.database = strings.Trim(dsn.Path, "/")
+		c.database = db
 	}
 }
 
@@ -58,9 +63,9 @@ func Tags(tags map[string]string) InfluxReporterFunc {
 
 // InfluxReporter represents an InfluxDB reporter.
 type InfluxReporter struct {
-	addr     string
-	username string
-	password string
+	//addr     string
+	//username string
+	//password string
 	database string
 
 	metric string
@@ -73,24 +78,26 @@ type InfluxReporter struct {
 }
 
 // NewInfluxReporter creates and returns a new NewInfluxReporter.
-func NewInfluxReporter(opts ...InfluxReporterFunc) (*InfluxReporter, error) {
-	r := &InfluxReporter{}
+func NewInfluxReporter(client client.Client, opts ...InfluxReporterFunc) *InfluxReporter {
+	r := &InfluxReporter{
+		client: client,
+	}
 
 	for _, o := range opts {
 		o(r)
 	}
 
-	c, err := client.NewHTTPClient(client.HTTPConfig{
-		Addr:     r.addr,
-		Username: r.username,
-		Password: r.password,
-	})
-	if err != nil {
-		return nil, err
-	}
-	r.client = c
+	//c, err := client.NewHTTPClient(client.HTTPConfig{
+	//	Addr:     r.addr,
+	//	Username: r.username,
+	//	Password: r.password,
+	//})
+	//if err != nil {
+	//	return nil, err
+	//}
+	//r.client = c
 
-	return r, nil
+	return r
 }
 
 // ReportBrokerOffsets reports a snapshot of the broker offsets.

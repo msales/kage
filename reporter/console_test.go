@@ -1,4 +1,4 @@
-package reporter
+package reporter_test
 
 import (
 	"bytes"
@@ -6,13 +6,12 @@ import (
 	"time"
 
 	"github.com/msales/kage"
+	"github.com/msales/kage/reporter"
 )
 
 func TestConsoleReporter_ReportBrokerOffsets(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
-	r := &ConsoleReporter{
-		w: buf,
-	}
+	r := reporter.NewConsoleReporter(buf)
 
 	offsets := &kage.BrokerOffsets{
 		"test": []*kage.BrokerOffset{
@@ -34,9 +33,7 @@ func TestConsoleReporter_ReportBrokerOffsets(t *testing.T) {
 
 func TestConsoleReporter_ReportConsumerOffsets(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
-	r := &ConsoleReporter{
-		w: buf,
-	}
+	r := reporter.NewConsoleReporter(buf)
 
 	offsets := &kage.ConsumerOffsets{
 		"foo": map[string][]*kage.ConsumerOffset{

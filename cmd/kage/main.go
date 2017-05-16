@@ -6,9 +6,11 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
+	"github.com/influxdata/influxdb/client/v2"
 	"github.com/msales/kage"
 	"github.com/msales/kage/kafka"
 	"github.com/msales/kage/reporter"
@@ -84,7 +86,7 @@ func main() {
 	<-quit
 }
 
-// createLogger creates a new logger from config
+// createLogger creates a new logger from config.
 func createLogger(config *kage.Config) log15.Logger {
 	lvl, err := log15.LvlFromString(config.LogLevel)
 	if err != nil {
@@ -105,38 +107,36 @@ func createLogger(config *kage.Config) log15.Logger {
 	return log
 }
 
-// createReporters creates reporters from the config
+// createReporters creates reporters from the config.
 func createReporters(config *kage.Config, logger log15.Logger) (*reporter.Reporters, error) {
 	rs := &reporter.Reporters{}
 
 	for _, name := range config.Reporters {
 		switch name {
 		case "influx":
-			u, err := url.Parse(config.Influx.DSN)
+			dsn, err := url.Parse(config.Influx.DSN)
 			if err != nil {
 				return nil, err
 			}
 
-			r, err := reporter.NewInfluxReporter(
-				reporter.DSN(u),
+			c, err := createInfluxClient(dsn)
+			if err != nil {
+				return nil, err
+			}
+			db := strings.Trim(dsn.Path, "/")
+
+			r := reporter.NewInfluxReporter(c,
+				reporter.Database(db),
 				reporter.Metric(config.Influx.Metric),
 				reporter.Policy(config.Influx.Policy),
 				reporter.Tags(config.Influx.Tags),
 				reporter.Log(logger),
 			)
-			if err != nil {
-				return nil, err
-			}
-
 			rs.Add(name, r)
 			break
 
 		case "stdout":
-			r, err := reporter.NewConsoleReporter()
-			if err != nil {
-				return nil, err
-			}
-
+			r := reporter.NewConsoleReporter(os.Stdout)
 			rs.Add(name, r)
 		}
 	}
@@ -144,7 +144,24 @@ func createReporters(config *kage.Config, logger log15.Logger) (*reporter.Report
 	return rs, nil
 }
 
-// Create and start the http server
+// createInfluxClient creates an influx client from a DSN.
+func createInfluxClient(dsn *url.URL) (client.Client, error) {
+	if dsn.User == nil {
+		dsn.User = &url.Userinfo{}
+	}
+
+	addr := dsn.Scheme + "://" + dsn.Host
+	username := dsn.User.Username()
+	password, _ := dsn.User.Password()
+
+	return client.NewHTTPClient(client.HTTPConfig{
+		Addr:     addr,
+		Username: username,
+		Password: password,
+	})
+}
+
+// Create and start the http server.
 func runServer(addr string, svcs []server.Service, logger log15.Logger) (*net.TCPListener, error) {
 	bind, err := net.ResolveTCPAddr("tcp", addr)
 	if err != nil {
