@@ -16,7 +16,7 @@ steps:
       # Run vet and tests
       - cd /go/src/github.com/${{CF_REPO_OWNER}}/${{CF_REPO_NAME}} && go vet $(go list ./... | grep -v /vendor/)
       - cd /go/src/github.com/${{CF_REPO_OWNER}}/${{CF_REPO_NAME}} && go test $(go list ./... | grep -v /vendor/)
-      - /go/bin/goveralls
+      - cd /go/src/github.com/${{CF_REPO_OWNER}}/${{CF_REPO_NAME}} && /go/bin/goveralls
 
   build_branch_image:
       type: build
