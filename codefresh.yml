@@ -1,0 +1,29 @@
+version: '1.0'
+steps:
+
+  perform_tests:
+    image: golang:1.8
+    working_directory: ${{main_clone}}
+    description: Performing unit tests...
+    commands:
+      # Need to have the source in the correct GOPATH folder - let's do that
+      - mkdir -p /go/src/github.com/${{CF_REPO_OWNER}}
+      - ln -s /codefresh/volume/${{CF_REPO_NAME}} /go/src/github.com/${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}
+      # Install pre-requisites and restore vendor
+      - go get -u github.com/FiloSottile/gvt
+      - go get -u github.com/mattn/goveralls
+      - cd /go/src/github.com/${{CF_REPO_OWNER}}/${{CF_REPO_NAME}} && gvt restore
+      # Run vet and tests
+      - cd /go/src/github.com/${{CF_REPO_OWNER}}/${{CF_REPO_NAME}} && go vet $(go list ./... | grep -v /vendor/)
+      - cd /go/src/github.com/${{CF_REPO_OWNER}}/${{CF_REPO_NAME}} && go test $(go list ./... | grep -v /vendor/)
+      - cd /go/bin/goveralls
+
+  build_branch_image:
+      type: build
+      description: Building the image...
+      image_name: ${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}
+      tag: '${{CF_BRANCH}}'
+      when:
+        branch:
+          ignore:
+            - master
