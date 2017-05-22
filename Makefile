@@ -1,23 +1,11 @@
-.PHONY: build ci test vet docker
+include github.com/msales/make/golang
 
-build:
-	go build -o ./dist/kage ./cmd/kage
+# Run all benchmarks
+bench:
+	@go test -bench=. $(shell go list ./... | grep -v /vendor/)
+.PHONY: bench
 
-clean:
-	rm -rf build/*
-
-ci: build test vet
-
-test: build
-	go test $(shell go list ./... | grep -v /vendor/)
-
-vet:
-	go vet $(shell go list ./... | grep -v /vendor/)
-
-bump:
-	pip install --upgrade bumpversion
-	bumpversion patch
-
+# Build the docker image
 docker:
-	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-s' -o ./dist/kage_docker ./cmd/kage
 	docker build -t kage .
+.PHONY: docker

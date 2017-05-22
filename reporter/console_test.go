@@ -1,18 +1,18 @@
-package reporter
+package reporter_test
 
 import (
 	"bytes"
 	"testing"
 	"time"
 
-	"github.com/msales/kage/kage"
+	"github.com/msales/kage"
+	"github.com/msales/kage/reporter"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestConsoleReporter_ReportBrokerOffsets(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
-	r := &ConsoleReporter{
-		w: buf,
-	}
+	r := reporter.NewConsoleReporter(buf)
 
 	offsets := &kage.BrokerOffsets{
 		"test": []*kage.BrokerOffset{
@@ -25,18 +25,12 @@ func TestConsoleReporter_ReportBrokerOffsets(t *testing.T) {
 	}
 	r.ReportBrokerOffsets(offsets)
 
-	want := "test:0 oldest:0 newest:1000 available:1000 \n"
-	got := buf.String()
-	if want != got {
-		t.Fatalf("expected %s; got %s", want, got)
-	}
+	assert.Equal(t, "test:0 oldest:0 newest:1000 available:1000 \n", buf.String())
 }
 
 func TestConsoleReporter_ReportConsumerOffsets(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
-	r := &ConsoleReporter{
-		w: buf,
-	}
+	r := reporter.NewConsoleReporter(buf)
 
 	offsets := &kage.ConsumerOffsets{
 		"foo": map[string][]*kage.ConsumerOffset{
@@ -51,9 +45,5 @@ func TestConsoleReporter_ReportConsumerOffsets(t *testing.T) {
 	}
 	r.ReportConsumerOffsets(offsets)
 
-	want := "foo test:0 offset:1000 lag:100 \n"
-	got := buf.String()
-	if want != got {
-		t.Fatalf("expected %s; got %s", want, got)
-	}
+	assert.Equal(t, "foo test:0 offset:1000 lag:100 \n", buf.String())
 }

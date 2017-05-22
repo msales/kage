@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/msales/kage/kage"
+	"github.com/msales/kage"
 )
 
 // MemoryStore represents an in memory offset store.

@@ -3,9 +3,8 @@ package reporter
 import (
 	"fmt"
 	"io"
-	"os"
 
-	"github.com/msales/kage/kage"
+	"github.com/msales/kage"
 )
 
 // ConsoleReporter represents a console reporter.
@@ -14,10 +13,10 @@ type ConsoleReporter struct {
 }
 
 // NewConsoleReporter creates and returns a new ConsoleReporter.
-func NewConsoleReporter() (*ConsoleReporter, error) {
+func NewConsoleReporter(w io.Writer) *ConsoleReporter {
 	return &ConsoleReporter{
-		w: os.Stdout,
-	}, nil
+		w: w,
+	}
 }
 
 // ReportBrokerOffsets reports a snapshot of the broker offsets.

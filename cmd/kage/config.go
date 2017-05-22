@@ -2,9 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/msales/kage/kage"
-	"gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
+
+	"github.com/msales/kage"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 func readConfig(args []string) (*kage.Config, error) {
@@ -73,7 +74,6 @@ func DefaultConfig() *kage.Config {
 		Log:      "stdout",
 		LogLevel: "info",
 		Kafka: kage.KafkaConfig{
-			Brokers: []string{"127.0.0.1:9092"},
 			Ignore: kage.KafkaIgnoreConfig{
 				Topics: []string{},
 				Groups: []string{},

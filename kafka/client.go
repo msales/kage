@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/msales/kage/kage"
+	"github.com/msales/kage"
 	"github.com/ryanuber/go-glob"
 	"gopkg.in/inconshreveable/log15.v2"
 )

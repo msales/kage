@@ -1,6 +1,6 @@
 package mocks
 
-import "github.com/msales/kage/kage"
+import "github.com/msales/kage"
 
 // MockReporter represents a mock Reporter.
 type MockReporter struct {

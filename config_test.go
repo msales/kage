@@ -1,8 +1,8 @@
 package kage
 
 import (
-	"reflect"
 	"testing"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMergeConfig(t *testing.T) {
@@ -52,8 +52,6 @@ func TestMergeConfig(t *testing.T) {
 
 	c := MergeConfig(a, b)
 
-	if !reflect.DeepEqual(c, b) {
-		t.Fatalf("expected %v; got %v", c, b)
-	}
+	assert.Equal(t, b, c)
 
 }
