@@ -74,7 +74,6 @@ func DefaultConfig() *kage.Config {
 		Log:      "stdout",
 		LogLevel: "info",
 		Kafka: kage.KafkaConfig{
-			Brokers: []string{"127.0.0.1:9092"},
 			Ignore: kage.KafkaIgnoreConfig{
 				Topics: []string{},
 				Groups: []string{},
