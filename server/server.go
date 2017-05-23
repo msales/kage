@@ -3,51 +3,41 @@ package server
 import (
 	"net/http"
 
-	"gopkg.in/inconshreveable/log15.v2"
+	"github.com/msales/kage"
 )
-
-// Service represents a service with health checks.
-type Service interface {
-	// IsHealthy checks the health of the service.
-	IsHealthy() bool
-}
 
 // Server represents an http server.
 type Server struct {
+	*kage.Application
+
 	mux *http.ServeMux
-
-	services []Service
-
-	logger log15.Logger
 }
 
-// New create and returns a new Server.
-func New(services []Service, logger log15.Logger) *Server {
+// New creates a new instance of Server.
+func New(app *kage.Application) *Server {
 	s := &Server{
-		mux:      http.NewServeMux(),
-		services: services,
-		logger:   logger,
+		Application: app,
+		mux:         http.NewServeMux(),
 	}
+
+	//s.mux.H
 
 	s.mux.HandleFunc("/health", http.HandlerFunc(s.HandleHealth))
 
 	return s
 }
 
+// ServeHTTP dispatches the request to the handler whose
+// pattern most closely matches the request URL.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.mux.ServeHTTP(w, r)
 }
 
+// HandleHealth handles health requests.
 func (s *Server) HandleHealth(w http.ResponseWriter, r *http.Request) {
-	code := 200
-
-	for _, service := range s.services {
-		if !service.IsHealthy() {
-			code = 500
-
-			break
-		}
+	if !s.IsHealthy() {
+		w.WriteHeader(500)
 	}
 
-	w.WriteHeader(code)
+	w.WriteHeader(200)
 }

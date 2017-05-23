@@ -14,7 +14,7 @@ func TestMemoryStore_BrokerOffsets(t *testing.T) {
 	memStore, err := store.New()
 	assert.NoError(t, err)
 
-	defer memStore.Shutdown()
+	defer memStore.Close()
 
 	memStore.AddOffset(&kage.PartitionOffset{
 		Topic:               "test",
@@ -62,7 +62,7 @@ func TestMemoryStore_ConsumerOffsets(t *testing.T) {
 	memStore, err := store.New()
 	assert.NoError(t, err)
 
-	defer memStore.Shutdown()
+	defer memStore.Close()
 
 	memStore.AddOffset(&kage.PartitionOffset{
 		Topic:               "test",
@@ -108,7 +108,7 @@ func TestMemoryStore_ConsumerOffsetsZeroOffset(t *testing.T) {
 	memStore, err := store.New()
 	assert.NoError(t, err)
 
-	defer memStore.Shutdown()
+	defer memStore.Close()
 
 	memStore.AddOffset(&kage.PartitionOffset{
 		Topic:               "test",
@@ -154,7 +154,7 @@ func TestMemoryStore_CleanConsumerOffsets(t *testing.T) {
 	memStore, err := store.New()
 	assert.NoError(t, err)
 
-	defer memStore.Shutdown()
+	defer memStore.Close()
 
 	memStore.AddOffset(&kage.PartitionOffset{
 		Topic:               "test",
