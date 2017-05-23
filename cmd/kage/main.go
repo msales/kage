@@ -23,7 +23,7 @@ func main() {
 	// Application
 	app, err := newApplication(config)
 	if err != nil {
-		kingpin.Fatalf("Error creating application: %s", err.Error())
+		kingpin.Fatalf(err.Error())
 	}
 	defer app.Close()
 
@@ -40,7 +40,7 @@ func main() {
 	if config.Server.Address != "" {
 		ln, err := runServer(app, config.Server.Address)
 		if err != nil {
-			kingpin.Fatalf("%s", err.Error())
+			kingpin.Fatalf(err.Error())
 		}
 		defer ln.Close()
 	}
