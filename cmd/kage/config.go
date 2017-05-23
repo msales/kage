@@ -25,8 +25,8 @@ func readConfig(args []string) (*kage.Config, error) {
 	app.Flag("log-level", "The log level to use. Options: 'debug', 'info', 'warn', 'error'").EnumVar(&cmdConfig.LogLevel, "debug", "info", "warn", "error")
 
 	app.Flag("brokers", "The kafka seed brokers connect to, Format: 'ip:port'").StringsVar(&cmdConfig.Kafka.Brokers)
-	app.Flag("ignore-topics", "The kafka topic patterns to ignore. This may contian wildcards").StringsVar(&cmdConfig.Kafka.Ignore.Topics)
-	app.Flag("ignore-groups", "The kafka consumer group patterns to ignore. This may contian wildcards").StringsVar(&cmdConfig.Kafka.Ignore.Groups)
+	app.Flag("ignore-topics", "The kafka topic patterns to ignore. This may contain wildcards").StringsVar(&cmdConfig.Kafka.Ignore.Topics)
+	app.Flag("ignore-groups", "The kafka consumer group patterns to ignore. This may contain wildcards").StringsVar(&cmdConfig.Kafka.Ignore.Groups)
 
 	app.Flag("reporters", "The reporters to use. Options: 'influx', 'stdout'").EnumsVar(&cmdConfig.Reporters, "influx", "stdout")
 	app.Flag("influx", "The DSN of the InfluxDB server to report to. Format: 'http://user:pass@ip:port/database'").StringVar(&cmdConfig.Influx.DSN)
@@ -69,6 +69,7 @@ func readConfigFile(path string) (*kage.Config, error) {
 	return config, nil
 }
 
+// DefaultConfig creates a default instance of the configuration.
 func DefaultConfig() *kage.Config {
 	return &kage.Config{
 		Log:      "stdout",

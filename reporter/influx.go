@@ -33,7 +33,7 @@ func Metric(metric string) InfluxReporterFunc {
 	}
 }
 
-// return configures the retention policy name on an InfluxReporter.
+// Policy configures the retention policy name on an InfluxReporter.
 func Policy(policy string) InfluxReporterFunc {
 	return func(c *InfluxReporter) {
 		c.policy = policy

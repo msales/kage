@@ -20,7 +20,7 @@ func TestMetric(t *testing.T) {
 
 	Metric("kafka")(r)
 
-	assert.Equal(t, r.metric, "kafka",)
+	assert.Equal(t, r.metric, "kafka")
 }
 
 func TestPolicy(t *testing.T) {

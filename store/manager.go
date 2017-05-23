@@ -8,7 +8,7 @@ import (
 	"github.com/msales/kage"
 )
 
-// ConsumerOffsets represents the broker and consumer offset manager
+// ClusterOffsets represents the broker and consumer offset manager
 type ClusterOffsets struct {
 	broker     kage.BrokerOffsets
 	brokerLock sync.RWMutex
