@@ -82,7 +82,7 @@ Get a topic offset information in json format.
 
 Get a consumer group offset information in json format.
 
-#### GET /consumers/<group>
+#### GET /consumers/$group
 
 Get a consumer group offset information for the specified consumer group in json format, or will return with a 404 status code.
 

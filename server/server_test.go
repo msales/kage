@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestServer_BrokersHandler(t *testing.T) {
-	req, err := http.NewRequest("GET", "/brokers", nil)
+func TestServer_TopicsHandler(t *testing.T) {
+	req, err := http.NewRequest("GET", "/topics", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
