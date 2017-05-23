@@ -5,6 +5,7 @@ import (
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
+// ClientFunc represents a function that configures the Client.
 type ClientFunc func(c *Client)
 
 // Log configures the logger on the Client.

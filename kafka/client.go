@@ -84,8 +84,8 @@ func (c *Client) IsHealthy() bool {
 	return true
 }
 
-// Shutdown shuts down the Client.
-func (c *Client) Shutdown() {
+// Close gracefully stops the Client.
+func (c *Client) Close() {
 	// Stop the offset ticker
 	c.metadataTicker.Stop()
 	c.brokerOffsetTicker.Stop()

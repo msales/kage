@@ -12,20 +12,6 @@ import (
 // InfluxReporterFunc represents a configuration function for InfluxReporter.
 type InfluxReporterFunc func(c *InfluxReporter)
 
-//// Credentials configures the credentials on an InfluxReporter.
-//func DSN(dsn *url.URL) InfluxReporterFunc {
-//	if dsn.User == nil {
-//		dsn.User = &url.Userinfo{}
-//	}
-//
-//	return func(c *InfluxReporter) {
-//		c.addr = dsn.Scheme + "://" + dsn.Host
-//		c.username = dsn.User.Username()
-//		c.password, _ = dsn.User.Password()
-//		c.database = strings.Trim(dsn.Path, "/")
-//	}
-//}
-
 // Database configures the database on an InfluxReporter.
 func Database(db string) InfluxReporterFunc {
 	return func(c *InfluxReporter) {
@@ -47,7 +33,7 @@ func Metric(metric string) InfluxReporterFunc {
 	}
 }
 
-// return configures the retention policy name on an InfluxReporter.
+// Policy configures the retention policy name on an InfluxReporter.
 func Policy(policy string) InfluxReporterFunc {
 	return func(c *InfluxReporter) {
 		c.policy = policy

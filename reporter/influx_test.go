@@ -1,18 +1,26 @@
 package reporter_test
 
 import (
+	"errors"
 	"testing"
 	"time"
 
+	"github.com/influxdata/influxdb/client/v2"
 	"github.com/msales/kage"
 	"github.com/msales/kage/reporter"
 	"github.com/msales/kage/testutil"
 	"github.com/msales/kage/testutil/mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestInfluxReporter_ReportBrokerOffsets(t *testing.T) {
-	c := &mocks.MockInfluxClient{Connected: true}
+	c := new(mocks.MockInfluxClient)
+	c.On("Write", mock.AnythingOfType("*client.batchpoints")).Return(nil).Run(func(args mock.Arguments) {
+		bp := args.Get(0).(client.BatchPoints)
+		assert.Len(t, bp.Points(), 1)
+	})
+
 	r := reporter.NewInfluxReporter(c,
 		reporter.Log(testutil.Logger),
 	)
@@ -28,11 +36,15 @@ func TestInfluxReporter_ReportBrokerOffsets(t *testing.T) {
 	}
 	r.ReportBrokerOffsets(offsets)
 
-	assert.Len(t, c.BatchPoints.Points(), 1)
 }
 
 func TestInfluxReporter_ReportConsumerOffsets(t *testing.T) {
-	c := &mocks.MockInfluxClient{Connected: true}
+	c := new(mocks.MockInfluxClient)
+	c.On("Write", mock.AnythingOfType("*client.batchpoints")).Return(nil).Run(func(args mock.Arguments) {
+		bp := args.Get(0).(client.BatchPoints)
+		assert.Len(t, bp.Points(), 1)
+	})
+
 	r := reporter.NewInfluxReporter(c,
 		reporter.Log(testutil.Logger),
 	)
@@ -49,12 +61,13 @@ func TestInfluxReporter_ReportConsumerOffsets(t *testing.T) {
 		},
 	}
 	r.ReportConsumerOffsets(offsets)
-
-	assert.Len(t, c.BatchPoints.Points(), 1)
 }
 
 func TestInfluxReporter_IsHealthy(t *testing.T) {
-	c := &mocks.MockInfluxClient{Connected: true}
+	c := new(mocks.MockInfluxClient)
+	c.On("Ping", mock.Anything).Return(time.Millisecond, "", nil).Once()
+	c.On("Ping", mock.Anything).Return(time.Millisecond, "", errors.New("test error")).Once()
+
 	r := reporter.NewInfluxReporter(c,
 		reporter.Log(testutil.Logger),
 	)

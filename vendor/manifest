@@ -95,6 +95,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/julienschmidt/httprouter",
+			"repository": "https://github.com/julienschmidt/httprouter",
+			"vcs": "git",
+			"revision": "8c199fb6259ffc1af525cc3ad52ee60ba8359669",
+			"branch": "HEAD",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/klauspost/crc32",
 			"repository": "https://github.com/klauspost/crc32",
 			"vcs": "git",

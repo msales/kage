@@ -8,16 +8,7 @@ import (
 	"github.com/msales/kage"
 )
 
-// MemoryStore represents an in memory offset store.
-type MemoryStore struct {
-	offsets       *ClusterOffsets
-	cleanupTicker *time.Ticker
-	shutdown      chan struct{}
-
-	OffsetCh chan *kage.PartitionOffset
-}
-
-// ConsumerOffsets represents the broker and consumer offset manager
+// ClusterOffsets represents the broker and consumer offset manager
 type ClusterOffsets struct {
 	broker     kage.BrokerOffsets
 	brokerLock sync.RWMutex
@@ -26,11 +17,20 @@ type ClusterOffsets struct {
 	consumerLock sync.RWMutex
 }
 
+// MemoryStore represents an in memory offset store.
+type MemoryStore struct {
+	offsets       *ClusterOffsets
+	cleanupTicker *time.Ticker
+	shutdown      chan struct{}
+
+	offsetCh chan *kage.PartitionOffset
+}
+
 // New creates and returns a new MemoryStore.
 func New() (*MemoryStore, error) {
 	m := &MemoryStore{
 		shutdown: make(chan struct{}),
-		OffsetCh: make(chan *kage.PartitionOffset, 10000),
+		offsetCh: make(chan *kage.PartitionOffset, 10000),
 	}
 
 	// Initialise the cluster offsets
@@ -43,7 +43,7 @@ func New() (*MemoryStore, error) {
 	go func() {
 		for {
 			select {
-			case o := <-m.OffsetCh:
+			case o := <-m.offsetCh:
 				if o.Group == "" {
 					go m.addBrokerOffset(o)
 				} else {
@@ -158,8 +158,13 @@ func (m *MemoryStore) CleanConsumerOffsets() {
 	}
 }
 
-// Shutdown shuts the MemoryStore down.
-func (m *MemoryStore) Shutdown() {
+// Channel get the offset channel.
+func (m *MemoryStore) Channel() chan *kage.PartitionOffset {
+	return m.offsetCh
+}
+
+// Close gracefully stops the MemoryStore.
+func (m *MemoryStore) Close() {
 	m.cleanupTicker.Stop()
 	close(m.shutdown)
 }
