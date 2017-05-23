@@ -33,6 +33,6 @@ func (m *MockInfluxClient) Query(q client.Query) (*client.Response, error) {
 }
 
 // Close releases any resources a Client may be using.
-func (c *MockInfluxClient) Close() error {
+func (m *MockInfluxClient) Close() error {
 	return nil
 }

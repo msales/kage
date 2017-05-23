@@ -2,7 +2,7 @@ package mocks
 
 import "github.com/stretchr/testify/mock"
 
-// Kafka represents a mock Kafka client.
+// MockKafka represents a mock Kafka client.
 type MockKafka struct {
 	mock.Mock
 }

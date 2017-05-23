@@ -5,7 +5,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// Store represents a mock offset store.
+// MockStore represents a mock offset store.
 type MockStore struct {
 	mock.Mock
 }

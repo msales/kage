@@ -21,7 +21,7 @@ func TestServer_TopicsHandler(t *testing.T) {
 	rr := httptest.NewRecorder()
 
 	bo := kage.BrokerOffsets{
-		"test": []*kage.BrokerOffset{{OldestOffset:0, NewestOffset: 100, Timestamp: 0}},
+		"test": []*kage.BrokerOffset{{OldestOffset: 0, NewestOffset: 100, Timestamp: 0}},
 	}
 
 	store := new(mocks.MockStore)
@@ -47,7 +47,7 @@ func TestServer_ConsumerGroupsHandler(t *testing.T) {
 
 	co := kage.ConsumerOffsets{
 		"test": map[string][]*kage.ConsumerOffset{
-			"test": []*kage.ConsumerOffset{{Offset:0, Lag: 100, Timestamp: 0}},
+			"test": {{Offset: 0, Lag: 100, Timestamp: 0}},
 		},
 	}
 
@@ -74,7 +74,7 @@ func TestServer_ConsumerGroupHandler(t *testing.T) {
 
 	co := kage.ConsumerOffsets{
 		"test": map[string][]*kage.ConsumerOffset{
-			"test": []*kage.ConsumerOffset{{Offset:0, Lag: 100, Timestamp: 0}},
+			"test": {{Offset: 0, Lag: 100, Timestamp: 0}},
 		},
 	}
 
@@ -101,7 +101,7 @@ func TestServer_ConsumerGroupHandler_NotFound(t *testing.T) {
 
 	co := kage.ConsumerOffsets{
 		"test": map[string][]*kage.ConsumerOffset{
-			"test": []*kage.ConsumerOffset{{Offset:0, Lag: 100, Timestamp: 0}},
+			"test": {{Offset: 0, Lag: 100, Timestamp: 0}},
 		},
 	}
 

@@ -39,13 +39,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type brokerTopics struct {
-	Topic          string `json:"topic"`
-	TotalAvailable int64 `json:"total_available"`
+	Topic          string            `json:"topic"`
+	TotalAvailable int64             `json:"total_available"`
 	Partitions     []brokerPartition `json:"partitions"`
 }
 
 type brokerPartition struct {
-	Partition int `json:"partition"`
+	Partition int   `json:"partition"`
 	Oldest    int64 `json:"oldest"`
 	Newest    int64 `json:"newest"`
 	Available int64 `json:"available"`
@@ -88,14 +88,14 @@ func (s *Server) BrokersHandler(w http.ResponseWriter, r *http.Request, _ httpro
 }
 
 type consumerGroup struct {
-	Group      string `json:"group"`
-	Topic      string `json:"topic"`
-	TotalLag   int64 `json:"total_lag"`
+	Group      string              `json:"group"`
+	Topic      string              `json:"topic"`
+	TotalLag   int64               `json:"total_lag"`
 	Partitions []consumerPartition `json:"partitions"`
 }
 
 type consumerPartition struct {
-	Partition int `json:"partition"`
+	Partition int   `json:"partition"`
 	Offset    int64 `json:"offset"`
 	Lag       int64 `json:"lag"`
 }
