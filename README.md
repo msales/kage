@@ -65,6 +65,27 @@ Environment variable names can be derived from the command line flags, prefixing
 and using uppercase changing - to _, e.g. ```--log-level``` becomes ```KAGE_LOG_LEVEL```.
 Where multiple command line flags are allowed, environment variable values should be separated by a new line character.
 
+## HTTP Endpoints
+
+Kage has an optional http server that can be enabled with the ```--addr``` configuration. This allows health checking
+as well as fetching broker and consumer group information. The endpoints are as follows:
+
+#### GET /health
+
+Gets the current health status ok Kage.
+ 
+#### GET /topics
+
+Get a topic offset information in json format.
+
+#### GET /consumers
+
+Get a consumer group offset information in json format.
+
+#### GET /consumers/<group>
+
+Get a consumer group offset information for the specified consumer group in json format, or will return with a 404 status code.
+
 ## Contributors
 
 We're supposed to tell you how to contribute to kage here.  

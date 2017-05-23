@@ -23,7 +23,7 @@ func New(app *kage.Application) *Server {
 		mux:         httprouter.New(),
 	}
 
-	s.mux.GET("/brokers", s.BrokersHandler)
+	s.mux.GET("/topics", s.BrokersHandler)
 	s.mux.GET("/consumers", s.ConsumerGroupsHandler)
 	s.mux.GET("/consumers/:group", s.ConsumerGroupHandler)
 
