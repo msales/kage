@@ -153,8 +153,9 @@ func createConsumerGroup(group string, topics map[string][]*kage.ConsumerOffset)
 
 		for i, partition := range partitions {
 			bp := consumerPartition{
-				Offset: partition.Offset,
-				Lag:    partition.Lag,
+				Partition: i,
+				Offset:    partition.Offset,
+				Lag:       partition.Lag,
 			}
 
 			bt.TotalLag += bp.Lag
