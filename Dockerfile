@@ -1,11 +1,11 @@
 # Build container
 FROM golang:1.8 as builder
 
-RUN go get -u github.com/FiloSottile/gvt
+RUN go get -u github.com/golang/dep/cmd/dep
 
 WORKDIR /go/src/github.com/msales/kage/
 COPY ./ .
-RUN gvt restore
+RUN dep ensure
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-s' -o kage ./cmd/kage
 
