@@ -72,7 +72,15 @@ as well as fetching broker and consumer group information. The endpoints are as 
 
 #### GET /health
 
-Gets the current health status ok Kage.
+Gets the current health status of Kage. Returns a 200 status code if Kage is healthy, otherwise a 500 status code
+
+#### GET /brokers
+
+Get the state of all known brokers.
+
+#### GET /brokers/health
+
+Get the current kafka health status. Returns a 200 status code if all brokers are connected, otherwise a 500 status code
  
 #### GET /topics
 
