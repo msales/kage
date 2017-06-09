@@ -33,6 +33,7 @@ func TestInfluxReporter_ReportBrokerOffsets(t *testing.T) {
 				Timestamp:    time.Now().Unix() * 1000,
 			},
 		},
+		"nil": []*kage.BrokerOffset{nil},
 	}
 	r.ReportBrokerOffsets(offsets)
 
@@ -59,6 +60,7 @@ func TestInfluxReporter_ReportConsumerOffsets(t *testing.T) {
 					Timestamp: time.Now().Unix() * 1000,
 				},
 			},
+			"nil": []*kage.ConsumerOffset{nil},
 		},
 	}
 	r.ReportConsumerOffsets(offsets)

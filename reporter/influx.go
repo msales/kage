@@ -75,16 +75,11 @@ func NewInfluxReporter(client client.Client, opts ...InfluxReporterFunc) *Influx
 
 // ReportBrokerOffsets reports a snapshot of the broker offsets.
 func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
-	pts, err := client.NewBatchPoints(client.BatchPointsConfig{
+	pts, _ := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:        r.database,
 		Precision:       "s",
 		RetentionPolicy: r.policy,
 	})
-	if err != nil {
-		r.log.Error(err.Error())
-
-		return
-	}
 
 	for topic, partitions := range *o {
 		for partition, offset := range partitions {
@@ -102,7 +97,7 @@ func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 				tags[key] = value
 			}
 
-			pt, err := client.NewPoint(
+			pt, _ := client.NewPoint(
 				r.metric,
 				tags,
 				map[string]interface{}{
@@ -112,11 +107,6 @@ func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 				},
 				time.Now(),
 			)
-			if err != nil {
-				r.log.Error(err.Error())
-
-				continue
-			}
 
 			pts.AddPoint(pt)
 		}
@@ -129,15 +119,11 @@ func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 
 // ReportConsumerOffsets reports a snapshot of the consumer group offsets.
 func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
-	pts, err := client.NewBatchPoints(client.BatchPointsConfig{
+	pts, _ := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  r.database,
 		Precision: "s",
+		RetentionPolicy: r.policy,
 	})
-	if err != nil {
-		r.log.Error(err.Error())
-
-		return
-	}
 
 	for group, topics := range *o {
 		for topic, partitions := range topics {
@@ -157,7 +143,7 @@ func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 					tags[key] = value
 				}
 
-				pt, err := client.NewPoint(
+				pt, _ := client.NewPoint(
 					r.metric,
 					tags,
 					map[string]interface{}{
@@ -166,11 +152,6 @@ func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 					},
 					time.Now(),
 				)
-				if err != nil {
-					r.log.Error(err.Error())
-
-					continue
-				}
 
 				pts.AddPoint(pt)
 			}
