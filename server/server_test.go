@@ -12,6 +12,59 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestServer_BrokersHandler(t *testing.T) {
+	req, err := http.NewRequest("GET", "/brokers", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+
+	broker := new(mocks.MockKafkaBroker)
+	broker.On("ID").Return(0)
+	broker.On("Connected").Return(false)
+
+	kafka := new(mocks.MockKafka)
+	kafka.On("Brokers").Return([]kage.KafkaBroker{broker})
+
+	app := &kage.Application{Kafka: kafka}
+
+	srv := server.New(app)
+	srv.ServeHTTP(rr, req)
+
+	want := "[{\"id\":0,\"connected\":false}]"
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, want, rr.Body.String())
+}
+
+func TestServer_BrokersHealthHandler(t *testing.T) {
+	req, err := http.NewRequest("GET", "/brokers/health", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+
+	broker := new(mocks.MockKafkaBroker)
+	broker.On("ID").Return(0)
+	broker.On("Connected").Return(true).Once()
+	broker.On("Connected").Return(false).Once()
+
+	kafka := new(mocks.MockKafka)
+	kafka.On("Brokers").Return([]kage.KafkaBroker{broker})
+
+	app := &kage.Application{Kafka: kafka}
+
+	srv := server.New(app)
+	srv.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	srv.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+}
+
 func TestServer_TopicsHandler(t *testing.T) {
 	req, err := http.NewRequest("GET", "/topics", nil)
 	if err != nil {

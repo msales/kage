@@ -1,7 +1,6 @@
 package reporter_test
 
 import (
-	"errors"
 	"testing"
 	"time"
 
@@ -22,6 +21,7 @@ func TestInfluxReporter_ReportBrokerOffsets(t *testing.T) {
 	})
 
 	r := reporter.NewInfluxReporter(c,
+		reporter.Tags(map[string]string{"test": "test"}),
 		reporter.Log(testutil.Logger),
 	)
 
@@ -33,6 +33,7 @@ func TestInfluxReporter_ReportBrokerOffsets(t *testing.T) {
 				Timestamp:    time.Now().Unix() * 1000,
 			},
 		},
+		"nil": []*kage.BrokerOffset{nil},
 	}
 	r.ReportBrokerOffsets(offsets)
 
@@ -46,6 +47,7 @@ func TestInfluxReporter_ReportConsumerOffsets(t *testing.T) {
 	})
 
 	r := reporter.NewInfluxReporter(c,
+		reporter.Tags(map[string]string{"test": "test"}),
 		reporter.Log(testutil.Logger),
 	)
 
@@ -58,23 +60,8 @@ func TestInfluxReporter_ReportConsumerOffsets(t *testing.T) {
 					Timestamp: time.Now().Unix() * 1000,
 				},
 			},
+			"nil": []*kage.ConsumerOffset{nil},
 		},
 	}
 	r.ReportConsumerOffsets(offsets)
-}
-
-func TestInfluxReporter_IsHealthy(t *testing.T) {
-	c := new(mocks.MockInfluxClient)
-	c.On("Ping", mock.Anything).Return(time.Millisecond, "", nil).Once()
-	c.On("Ping", mock.Anything).Return(time.Millisecond, "", errors.New("test error")).Once()
-
-	r := reporter.NewInfluxReporter(c,
-		reporter.Log(testutil.Logger),
-	)
-
-	assert.True(t, r.IsHealthy())
-
-	c.Close()
-
-	assert.False(t, r.IsHealthy())
 }

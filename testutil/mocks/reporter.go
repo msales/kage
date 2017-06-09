@@ -19,9 +19,3 @@ func (m *MockReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 func (m *MockReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 	m.Called(o)
 }
-
-// IsHealthy checks the health of the reporter.
-func (m *MockReporter) IsHealthy() bool {
-	args := m.Called()
-	return args.Bool(0)
-}

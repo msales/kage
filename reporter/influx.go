@@ -49,9 +49,6 @@ func Tags(tags map[string]string) InfluxReporterFunc {
 
 // InfluxReporter represents an InfluxDB reporter.
 type InfluxReporter struct {
-	//addr     string
-	//username string
-	//password string
 	database string
 
 	metric string
@@ -73,31 +70,16 @@ func NewInfluxReporter(client client.Client, opts ...InfluxReporterFunc) *Influx
 		o(r)
 	}
 
-	//c, err := client.NewHTTPClient(client.HTTPConfig{
-	//	Addr:     r.addr,
-	//	Username: r.username,
-	//	Password: r.password,
-	//})
-	//if err != nil {
-	//	return nil, err
-	//}
-	//r.client = c
-
 	return r
 }
 
 // ReportBrokerOffsets reports a snapshot of the broker offsets.
 func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
-	pts, err := client.NewBatchPoints(client.BatchPointsConfig{
+	pts, _ := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:        r.database,
 		Precision:       "s",
 		RetentionPolicy: r.policy,
 	})
-	if err != nil {
-		r.log.Error(err.Error())
-
-		return
-	}
 
 	for topic, partitions := range *o {
 		for partition, offset := range partitions {
@@ -115,7 +97,7 @@ func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 				tags[key] = value
 			}
 
-			pt, err := client.NewPoint(
+			pt, _ := client.NewPoint(
 				r.metric,
 				tags,
 				map[string]interface{}{
@@ -125,11 +107,6 @@ func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 				},
 				time.Now(),
 			)
-			if err != nil {
-				r.log.Error(err.Error())
-
-				continue
-			}
 
 			pts.AddPoint(pt)
 		}
@@ -142,15 +119,11 @@ func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 
 // ReportConsumerOffsets reports a snapshot of the consumer group offsets.
 func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
-	pts, err := client.NewBatchPoints(client.BatchPointsConfig{
+	pts, _ := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  r.database,
 		Precision: "s",
+		RetentionPolicy: r.policy,
 	})
-	if err != nil {
-		r.log.Error(err.Error())
-
-		return
-	}
 
 	for group, topics := range *o {
 		for topic, partitions := range topics {
@@ -170,7 +143,7 @@ func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 					tags[key] = value
 				}
 
-				pt, err := client.NewPoint(
+				pt, _ := client.NewPoint(
 					r.metric,
 					tags,
 					map[string]interface{}{
@@ -179,11 +152,6 @@ func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 					},
 					time.Now(),
 				)
-				if err != nil {
-					r.log.Error(err.Error())
-
-					continue
-				}
 
 				pts.AddPoint(pt)
 			}
@@ -193,17 +161,4 @@ func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 	if err := r.client.Write(pts); err != nil {
 		r.log.Error(err.Error())
 	}
-}
-
-// IsHealthy checks the health of the InfluxReporter.
-func (r InfluxReporter) IsHealthy() bool {
-	_, _, err := r.client.Ping(100)
-
-	if err != nil {
-		r.log.Crit(err.Error())
-
-		return false
-	}
-
-	return true
 }

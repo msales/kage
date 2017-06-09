@@ -40,9 +40,9 @@ func (a *Application) Report() {
 
 // IsHealthy checks the health of the Application.
 func (a *Application) IsHealthy() bool {
-	if a.Reporters == nil || a.Kafka == nil {
+	if a.Kafka == nil {
 		return false
 	}
 
-	return a.Kafka.IsHealthy() && a.Reporters.IsHealthy()
+	return a.Kafka.IsHealthy()
 }

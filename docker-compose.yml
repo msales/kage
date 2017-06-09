@@ -1,0 +1,43 @@
+version: '2.1'
+services:
+  kage:
+    build: .
+    image: kage:test
+    depends_on:
+      kafka:
+        condition: service_healthy
+    links:
+      - kafka
+    environment:
+      - KAGE_BROKERS=kafka:9092
+  kafka:
+    image: 'spotify/kafka:latest'
+    environment:
+      - ADVERTISED_PORT=9092
+    logging:
+      driver: "none"
+    healthcheck:
+      test: bash -c "cat < /dev/null > /dev/tcp/localhost/9092"
+      interval: 10s
+      timeout: 10s
+      retries: 5
+  producer:
+    image: 'spotify/kafka:latest'
+    logging:
+      driver: "none"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    links:
+      - kafka
+    command: sh -c "while /bin/true; do echo PING|$$KAFKA_HOME/bin/kafka-console-producer.sh --broker-list kafka:9092 --topic test; sleep 0.1; done"
+  consumer:
+    image: 'spotify/kafka:latest'
+    logging:
+      driver: "none"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    links:
+      - kafka
+    command: sh -c "$$KAFKA_HOME/bin/kafka-console-consumer.sh --bootstrap-server kafka:9093 --topic test"

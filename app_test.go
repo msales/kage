@@ -35,13 +35,8 @@ func TestApplication_Close(t *testing.T) {
 func TestApplication_IsHealthy(t *testing.T) {
 	reporters := &kage.Reporters{}
 
-	reporter := new(mocks.MockReporter)
-	reporter.On("IsHealthy").Return(true).Once()
-	reporter.On("IsHealthy").Return(false).Once()
-	reporters.Add("test", reporter)
-
 	kafka := new(mocks.MockKafka)
-	kafka.On("IsHealthy").Return(true).Twice()
+	kafka.On("IsHealthy").Return(true).Once()
 	kafka.On("IsHealthy").Return(false).Once()
 
 	app := &kage.Application{
@@ -51,9 +46,7 @@ func TestApplication_IsHealthy(t *testing.T) {
 
 	assert.True(t, app.IsHealthy())
 	assert.False(t, app.IsHealthy())
-	assert.False(t, app.IsHealthy())
 
-	reporter.AssertExpectations(t)
 	kafka.AssertExpectations(t)
 }
 
