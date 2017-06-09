@@ -21,6 +21,7 @@ func TestInfluxReporter_ReportBrokerOffsets(t *testing.T) {
 	})
 
 	r := reporter.NewInfluxReporter(c,
+		reporter.Tags(map[string]string{"test": "test"}),
 		reporter.Log(testutil.Logger),
 	)
 
@@ -45,6 +46,7 @@ func TestInfluxReporter_ReportConsumerOffsets(t *testing.T) {
 	})
 
 	r := reporter.NewInfluxReporter(c,
+		reporter.Tags(map[string]string{"test": "test"}),
 		reporter.Log(testutil.Logger),
 	)
 

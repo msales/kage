@@ -26,3 +26,20 @@ func (m MockKafka) IsHealthy() bool {
 func (m MockKafka) Close() {
 	m.Called()
 }
+
+// MockKafkaBroker represents a mock Kafka broker.
+type MockKafkaBroker struct {
+	mock.Mock
+}
+
+// ID returns the Broker id.
+func (m MockKafkaBroker) ID() int32 {
+	args := m.Called()
+	return int32(args.Int(0))
+}
+
+// Connected returns the Broker connection status.
+func (m MockKafkaBroker) Connected() bool {
+	args := m.Called()
+	return args.Bool(0)
+}
