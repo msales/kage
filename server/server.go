@@ -45,6 +45,29 @@ type brokerStatus struct {
 	Connected bool `json:"connected"`
 }
 
+// BrokersHandler handles requests for brokers status.
+func (s *Server) BrokersHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	brokers := []brokerStatus{}
+	for _, b := range s.Kafka.Brokers() {
+		brokers = append(brokers, brokerStatus{
+			ID:        b.ID(),
+			Connected: b.Connected(),
+		})
+	}
+
+	s.writeJson(w, brokers)
+}
+
+// BrokersHealthHandler handles requests for brokers health.
+func (s *Server) BrokersHealthHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	for _, b := range s.Kafka.Brokers() {
+		if !b.Connected() {
+			w.WriteHeader(500)
+			return
+		}
+	}
+}
+
 type brokerTopics struct {
 	Topic          string            `json:"topic"`
 	TotalAvailable int64             `json:"total_available"`
@@ -56,36 +79,6 @@ type brokerPartition struct {
 	Oldest    int64 `json:"oldest"`
 	Newest    int64 `json:"newest"`
 	Available int64 `json:"available"`
-}
-
-// BrokersHandler handles requests for brokers status.
-func (s *Server) BrokersHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	brokers := []brokerStatus{}
-	for _, b := range s.Kafka.Brokers() {
-		brokers = append(brokers, brokerStatus{
-			ID:        b.ID(),
-			Connected: b.Connected(),
-		})
-	}
-
-	data, err := json.Marshal(brokers)
-	if err != nil {
-		w.WriteHeader(500)
-		s.Logger.Error(fmt.Sprintf("server: error encoding broker status: %s", err))
-		return
-	}
-
-	w.Write(data)
-}
-
-// BrokersHealthHandler handles requests for brokers health.
-func (s *Server) BrokersHealthHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	for _, b := range s.Kafka.Brokers() {
-		if !b.Connected() {
-			w.WriteHeader(500)
-			return
-		}
-	}
 }
 
 // TopicsHandler handles requests for topic offsets.
@@ -114,14 +107,7 @@ func (s *Server) TopicsHandler(w http.ResponseWriter, r *http.Request, _ httprou
 		topics = append(topics, bt)
 	}
 
-	data, err := json.Marshal(topics)
-	if err != nil {
-		w.WriteHeader(500)
-		s.Logger.Error(fmt.Sprintf("server: error encoding topics: %s", err))
-		return
-	}
-
-	w.Write(data)
+	s.writeJson(w, topics)
 }
 
 type consumerGroup struct {
@@ -146,14 +132,7 @@ func (s *Server) ConsumerGroupsHandler(w http.ResponseWriter, r *http.Request, _
 		groups = append(groups, createConsumerGroup(group, topics)...)
 	}
 
-	data, err := json.Marshal(groups)
-	if err != nil {
-		w.WriteHeader(500)
-		s.Logger.Error(fmt.Sprintf("server: error encoding groups: %s", err))
-		return
-	}
-
-	w.Write(data)
+	s.writeJson(w, groups)
 }
 
 // ConsumerGroupHandler handles requests for a consumer group offsets.
@@ -169,14 +148,7 @@ func (s *Server) ConsumerGroupHandler(w http.ResponseWriter, r *http.Request, pa
 
 	groups := createConsumerGroup(group, topics)
 
-	data, err := json.Marshal(groups)
-	if err != nil {
-		w.WriteHeader(500)
-		s.Logger.Error(fmt.Sprintf("server: error encoding groups: %s", err))
-		return
-	}
-
-	w.Write(data)
+	s.writeJson(w, groups)
 }
 
 func createConsumerGroup(group string, topics map[string][]*kage.ConsumerOffset) []consumerGroup {
@@ -213,4 +185,15 @@ func (s *Server) HealthHandler(w http.ResponseWriter, r *http.Request, _ httprou
 	}
 
 	w.WriteHeader(200)
+}
+
+func (s *Server) writeJson(w http.ResponseWriter, v interface{}) {
+	data, err := json.Marshal(v)
+	if err != nil {
+		w.WriteHeader(500)
+		s.Logger.Error(fmt.Sprintf("server: error writing json: %s", err))
+		return
+	}
+
+	w.Write(data)
 }
