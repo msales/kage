@@ -59,20 +59,3 @@ func TestReporters_ReportConsumerOffsets(t *testing.T) {
 
 	m1.AssertExpectations(t)
 }
-
-func TestReporters_IsHealthy(t *testing.T) {
-	rs := kage.Reporters{}
-
-	m1 := new(mocks.MockReporter)
-	m1.On("IsHealthy").Return(true).Once()
-	m1.On("IsHealthy").Return(false).Once()
-	rs.Add("test1", m1)
-
-	m2 := new(mocks.MockReporter)
-	m2.On("IsHealthy").Return(true).Once()
-	m2.On("IsHealthy").Return(false).Once()
-	rs.Add("test2", m2)
-
-	assert.True(t, rs.IsHealthy())
-	assert.False(t, rs.IsHealthy())
-}

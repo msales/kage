@@ -1,10 +1,19 @@
 package mocks
 
-import "github.com/stretchr/testify/mock"
+import (
+	"github.com/msales/kage"
+	"github.com/stretchr/testify/mock"
+)
 
 // MockKafka represents a mock Kafka client.
 type MockKafka struct {
 	mock.Mock
+}
+
+// Brokers returns a list of Kafka brokers.
+func (m MockKafka) Brokers() []kage.KafkaBroker {
+	args := m.Called()
+	return args.Get(0).([]kage.KafkaBroker)
 }
 
 // IsHealthy checks the health of the Kafka client.

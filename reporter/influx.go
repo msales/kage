@@ -49,9 +49,6 @@ func Tags(tags map[string]string) InfluxReporterFunc {
 
 // InfluxReporter represents an InfluxDB reporter.
 type InfluxReporter struct {
-	//addr     string
-	//username string
-	//password string
 	database string
 
 	metric string
@@ -72,16 +69,6 @@ func NewInfluxReporter(client client.Client, opts ...InfluxReporterFunc) *Influx
 	for _, o := range opts {
 		o(r)
 	}
-
-	//c, err := client.NewHTTPClient(client.HTTPConfig{
-	//	Addr:     r.addr,
-	//	Username: r.username,
-	//	Password: r.password,
-	//})
-	//if err != nil {
-	//	return nil, err
-	//}
-	//r.client = c
 
 	return r
 }
@@ -193,17 +180,4 @@ func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 	if err := r.client.Write(pts); err != nil {
 		r.log.Error(err.Error())
 	}
-}
-
-// IsHealthy checks the health of the InfluxReporter.
-func (r InfluxReporter) IsHealthy() bool {
-	_, _, err := r.client.Ping(100)
-
-	if err != nil {
-		r.log.Crit(err.Error())
-
-		return false
-	}
-
-	return true
 }

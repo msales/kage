@@ -23,7 +23,9 @@ func New(app *kage.Application) *Server {
 		mux:         httprouter.New(),
 	}
 
-	s.mux.GET("/topics", s.BrokersHandler)
+	s.mux.GET("/brokers", s.BrokersHandler)
+	s.mux.GET("/brokers/health", s.BrokersHealthHandler)
+	s.mux.GET("/topics", s.TopicsHandler)
 	s.mux.GET("/consumers", s.ConsumerGroupsHandler)
 	s.mux.GET("/consumers/:group", s.ConsumerGroupHandler)
 
@@ -36,6 +38,11 @@ func New(app *kage.Application) *Server {
 // pattern most closely matches the request URL.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.mux.ServeHTTP(w, r)
+}
+
+type brokerStatus struct {
+	ID        int32 `json:"id"`
+	Connected bool `json:"connected"`
 }
 
 type brokerTopics struct {
@@ -51,8 +58,38 @@ type brokerPartition struct {
 	Available int64 `json:"available"`
 }
 
-// BrokersHandler handles requests for broker offsets.
+// BrokersHandler handles requests for brokers status.
 func (s *Server) BrokersHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	brokers := []brokerStatus{}
+	for _, b := range s.Kafka.Brokers() {
+		brokers = append(brokers, brokerStatus{
+			ID:        b.ID(),
+			Connected: b.Connected(),
+		})
+	}
+
+	data, err := json.Marshal(brokers)
+	if err != nil {
+		w.WriteHeader(500)
+		s.Logger.Error(fmt.Sprintf("server: error encoding broker status: %s", err))
+		return
+	}
+
+	w.Write(data)
+}
+
+// BrokersHealthHandler handles requests for brokers health.
+func (s *Server) BrokersHealthHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	for _, b := range s.Kafka.Brokers() {
+		if !b.Connected() {
+			w.WriteHeader(500)
+			return
+		}
+	}
+}
+
+// TopicsHandler handles requests for topic offsets.
+func (s *Server) TopicsHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	offsets := s.Store.BrokerOffsets()
 
 	topics := []brokerTopics{}

@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestClient_IsHealthy(t *testing.T) {
+func TestClient_Brokers(t *testing.T) {
 	seedBroker := sarama.NewMockBroker(t, 1)
 	leader := sarama.NewMockBroker(t, 2)
 
@@ -26,7 +26,41 @@ func TestClient_IsHealthy(t *testing.T) {
 
 	c := &Client{client: kafka}
 
+	assert.Len(t, c.Brokers(), 2)
+
+	seedBroker.Close()
+	leader.Close()
+}
+
+func TestClient_IsHealthy(t *testing.T) {
+	seedBroker := sarama.NewMockBroker(t, 1)
+	leader := sarama.NewMockBroker(t, 2)
+
+	metadata := new(sarama.MetadataResponse)
+	metadata.AddTopicPartition("foo", 0, leader.BrokerID(), nil, nil, sarama.ErrNoError)
+	metadata.AddBroker(seedBroker.Addr(), seedBroker.BrokerID())
+	metadata.AddBroker(leader.Addr(), leader.BrokerID())
+	seedBroker.Returns(metadata)
+
+	kafka, err := sarama.NewClient([]string{seedBroker.Addr()}, sarama.NewConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Open all broker connections
+	for _, b := range kafka.Brokers() {
+		b.Open(kafka.Config())
+	}
+
+	c := &Client{client: kafka}
+
 	assert.True(t, c.IsHealthy())
+
+	// Close all broker connections
+	for _, b := range kafka.Brokers() {
+		b.Close()
+	}
+
+	assert.False(t, c.IsHealthy())
 
 	seedBroker.Close()
 	leader.Close()

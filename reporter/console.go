@@ -66,8 +66,3 @@ func (r ConsoleReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
 		}
 	}
 }
-
-// IsHealthy checks the health of the console reporter.
-func (r ConsoleReporter) IsHealthy() bool {
-	return true
-}

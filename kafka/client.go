@@ -11,6 +11,19 @@ import (
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
+type broker struct {
+	id        int32
+	connected bool
+}
+
+func (b broker) ID() int32 {
+	return b.id
+}
+
+func (b broker) Connected() bool {
+	return b.connected
+}
+
 // Client represents a Kafka cluster connection.
 type Client struct {
 	brokers []string
@@ -72,16 +85,28 @@ func New(opts ...ClientFunc) (*Client, error) {
 	return client, nil
 }
 
+// Brokers returns a list of Kafka brokers.
+func (c *Client) Brokers() []kage.KafkaBroker {
+	brokers := []kage.KafkaBroker{}
+	for _, b := range c.client.Brokers() {
+		connected, _ := b.Connected()
+		brokers = append(brokers, broker{
+			id:        b.ID(),
+			connected: connected,
+		})
+	}
+	return brokers
+}
+
 // IsHealthy checks the health of the Kafka client.
 func (c *Client) IsHealthy() bool {
 	for _, b := range c.client.Brokers() {
-		if ok, err := b.Connected(); !ok && err != nil {
-			c.log.Crit(err.Error())
-			return false
+		if ok, _ := b.Connected(); ok {
+			return true
 		}
 	}
 
-	return true
+	return false
 }
 
 // Close gracefully stops the Client.
@@ -162,13 +187,15 @@ func (c *Client) getOffsets() error {
 		for topic, partitions := range response.Blocks {
 			for partition, offsetResp := range partitions {
 				if offsetResp.Err != sarama.ErrNoError {
-					if offsetResp.Err == sarama.ErrUnknownTopicOrPartition {
+					if offsetResp.Err == sarama.ErrUnknownTopicOrPartition ||
+						offsetResp.Err == sarama.ErrNotLeaderForPartition {
 						// If we get this, the metadata is likely off, force a refresh for this topic
 						c.refreshMetadata(topic)
+						c.log.Info(fmt.Sprintf("Metadata for topic %s refreshed due to OffsetResponse error", topic))
+						continue
 					}
 
 					c.log.Warn(fmt.Sprintf("Error in OffsetResponse for %s:%v from broker %v: %s", topic, partition, brokerID, offsetResp.Err.Error()))
-
 					continue
 				}
 
@@ -245,7 +272,6 @@ func (c *Client) getConsumerOffsets() error {
 				requests[coordinator.ID()][group] = &sarama.OffsetFetchRequest{ConsumerGroup: group, Version: 1}
 			}
 
-			//requests[coordinator.ID()].AddGroup(group)
 			for topic, partitions := range topicMap {
 				for i := 0; i < partitions; i++ {
 					requests[coordinator.ID()][group].AddPartition(topic, int32(i))

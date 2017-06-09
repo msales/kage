@@ -53,17 +53,6 @@ func (rs *Reporters) ReportConsumerOffsets(o *ConsumerOffsets) {
 	}
 }
 
-// IsHealthy checks the health of the reporters.
-func (rs *Reporters) IsHealthy() bool {
-	for _, r := range *rs {
-		if !r.IsHealthy() {
-			return false
-		}
-	}
-
-	return true
-}
-
 // Reporter represents a offset reporter.
 type Reporter interface {
 	// ReportBrokerOffsets reports a snapshot of the broker offsets.
@@ -71,9 +60,6 @@ type Reporter interface {
 
 	// ReportConsumerOffsets reports a snapshot of the consumer group offsets.
 	ReportConsumerOffsets(o *ConsumerOffsets)
-
-	// IsHealthy checks the health of the reporter.
-	IsHealthy() bool
 }
 
 // Store represents an offset store.
@@ -96,9 +82,21 @@ type Store interface {
 
 // Kafka represents a Kafka client.
 type Kafka interface {
+	// Brokers returns a list of Kafka brokers.
+	Brokers() []KafkaBroker
+
 	// IsHealthy checks the health of the Kafka client.
 	IsHealthy() bool
 
 	// Close gracefully stops the Kafka client.
 	Close()
+}
+
+// KafkaBroker represents a Kafka Broker.
+type KafkaBroker interface {
+	// ID returns the Broker id.
+	ID() int32
+
+	// Connected returns the Broker connection status.
+	Connected() bool
 }

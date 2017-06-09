@@ -1,7 +1,6 @@
 package reporter_test
 
 import (
-	"errors"
 	"testing"
 	"time"
 
@@ -61,20 +60,4 @@ func TestInfluxReporter_ReportConsumerOffsets(t *testing.T) {
 		},
 	}
 	r.ReportConsumerOffsets(offsets)
-}
-
-func TestInfluxReporter_IsHealthy(t *testing.T) {
-	c := new(mocks.MockInfluxClient)
-	c.On("Ping", mock.Anything).Return(time.Millisecond, "", nil).Once()
-	c.On("Ping", mock.Anything).Return(time.Millisecond, "", errors.New("test error")).Once()
-
-	r := reporter.NewInfluxReporter(c,
-		reporter.Log(testutil.Logger),
-	)
-
-	assert.True(t, r.IsHealthy())
-
-	c.Close()
-
-	assert.False(t, r.IsHealthy())
 }
