@@ -93,6 +93,10 @@ func (s *Server) TopicsHandler(w http.ResponseWriter, r *http.Request, _ httprou
 		}
 
 		for i, partition := range partitions {
+			if partition == nil {
+				continue
+			}
+
 			bp := brokerPartition{
 				Partition: i,
 				Oldest:    partition.OldestOffset,
@@ -161,6 +165,10 @@ func createConsumerGroup(group string, topics map[string][]*kage.ConsumerOffset)
 		}
 
 		for i, partition := range partitions {
+			if partition == nil {
+				continue
+			}
+
 			bp := consumerPartition{
 				Partition: i,
 				Offset:    partition.Offset,
