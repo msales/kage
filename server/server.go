@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-zoo/bone"
 	"github.com/msales/kage"
 )
 
@@ -13,23 +13,23 @@ import (
 type Server struct {
 	*kage.Application
 
-	mux *httprouter.Router
+	mux *bone.Mux
 }
 
 // New creates a new instance of Server.
 func New(app *kage.Application) *Server {
 	s := &Server{
 		Application: app,
-		mux:         httprouter.New(),
+		mux:         bone.New(),
 	}
 
-	s.mux.GET("/brokers", s.BrokersHandler)
-	s.mux.GET("/brokers/health", s.BrokersHealthHandler)
-	s.mux.GET("/topics", s.TopicsHandler)
-	s.mux.GET("/consumers", s.ConsumerGroupsHandler)
-	s.mux.GET("/consumers/:group", s.ConsumerGroupHandler)
+	s.mux.GetFunc("/brokers", s.BrokersHandler)
+	s.mux.GetFunc("/brokers/health", s.BrokersHealthHandler)
+	s.mux.GetFunc("/topics", s.TopicsHandler)
+	s.mux.GetFunc("/consumers", s.ConsumerGroupsHandler)
+	s.mux.GetFunc("/consumers/:group", s.ConsumerGroupHandler)
 
-	s.mux.GET("/health", s.HealthHandler)
+	s.mux.GetFunc("/health", s.HealthHandler)
 
 	return s
 }
@@ -46,7 +46,7 @@ type brokerStatus struct {
 }
 
 // BrokersHandler handles requests for brokers status.
-func (s *Server) BrokersHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) BrokersHandler(w http.ResponseWriter, r *http.Request) {
 	brokers := []brokerStatus{}
 	for _, b := range s.Kafka.Brokers() {
 		brokers = append(brokers, brokerStatus{
@@ -59,7 +59,7 @@ func (s *Server) BrokersHandler(w http.ResponseWriter, r *http.Request, _ httpro
 }
 
 // BrokersHealthHandler handles requests for brokers health.
-func (s *Server) BrokersHealthHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) BrokersHealthHandler(w http.ResponseWriter, r *http.Request) {
 	for _, b := range s.Kafka.Brokers() {
 		if !b.Connected() {
 			w.WriteHeader(500)
@@ -82,7 +82,7 @@ type brokerPartition struct {
 }
 
 // TopicsHandler handles requests for topic offsets.
-func (s *Server) TopicsHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) TopicsHandler(w http.ResponseWriter, r *http.Request) {
 	offsets := s.Store.BrokerOffsets()
 
 	topics := []brokerTopics{}
@@ -128,7 +128,7 @@ type consumerPartition struct {
 }
 
 // ConsumerGroupsHandler handles requests for consumer groups offsets.
-func (s *Server) ConsumerGroupsHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) ConsumerGroupsHandler(w http.ResponseWriter, r *http.Request) {
 	offsets := s.Store.ConsumerOffsets()
 
 	groups := []consumerGroup{}
@@ -140,10 +140,10 @@ func (s *Server) ConsumerGroupsHandler(w http.ResponseWriter, r *http.Request, _
 }
 
 // ConsumerGroupHandler handles requests for a consumer group offsets.
-func (s *Server) ConsumerGroupHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (s *Server) ConsumerGroupHandler(w http.ResponseWriter, r *http.Request) {
 	offsets := s.Store.ConsumerOffsets()
 
-	group := params.ByName("group")
+	group := bone.GetValue(r, "group")
 	topics, ok := offsets[group]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
@@ -186,7 +186,7 @@ func createConsumerGroup(group string, topics map[string][]*kage.ConsumerOffset)
 }
 
 // HealthHandler handles health requests.
-func (s *Server) HealthHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) HealthHandler(w http.ResponseWriter, r *http.Request) {
 	if !s.IsHealthy() {
 		w.WriteHeader(500)
 		return
