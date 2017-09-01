@@ -62,6 +62,12 @@
   version = "v1.3.1"
 
 [[projects]]
+  name = "github.com/julienschmidt/httprouter"
+  packages = ["."]
+  revision = "8c199fb6259ffc1af525cc3ad52ee60ba8359669"
+  version = "v1.1"
+
+[[projects]]
   name = "github.com/mattn/go-colorable"
   packages = ["."]
   revision = "941b50ebc6efddf4c41c8e4537a5f68a4e686b24"
@@ -136,6 +142,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1fe1c0a228594916dcfb63af0322dbef34f6ecca580ddc057b6b2216f23a36d0"
+  inputs-digest = "44fe5ee6028b9054076aa0eb18bcb3aa14f25fe5ba5596fa9da7da187c8991ce"
   solver-name = "gps-cdcl"
   solver-version = 1

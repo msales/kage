@@ -31,11 +31,11 @@ func newApplication(c *kage.Config) (*kage.Application, error) {
 		return nil, err
 	}
 
-	kafka, err := kafka.New(
+	monitor, err := kafka.New(
 		kafka.Brokers(c.Kafka.Brokers),
 		kafka.IgnoreTopics(c.Kafka.Ignore.Topics),
 		kafka.IgnoreGroups(c.Kafka.Ignore.Groups),
-		kafka.OffsetChannel(memStore.Channel()),
+		kafka.StateChannel(memStore.Channel()),
 		kafka.Log(logger),
 	)
 	if err != nil {
@@ -45,7 +45,7 @@ func newApplication(c *kage.Config) (*kage.Application, error) {
 	app := kage.NewApplication()
 	app.Store = memStore
 	app.Reporters = reporters
-	app.Kafka = kafka
+	app.Monitor = monitor
 	app.Logger = logger
 
 	return app, nil

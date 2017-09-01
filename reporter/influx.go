@@ -2,10 +2,11 @@ package reporter
 
 import (
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/influxdata/influxdb/client/v2"
-	"github.com/msales/kage"
+	"github.com/msales/kage/store"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
@@ -74,7 +75,7 @@ func NewInfluxReporter(client client.Client, opts ...InfluxReporterFunc) *Influx
 }
 
 // ReportBrokerOffsets reports a snapshot of the broker offsets.
-func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
+func (r InfluxReporter) ReportBrokerOffsets(o *store.BrokerOffsets) {
 	pts, _ := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:        r.database,
 		Precision:       "s",
@@ -117,11 +118,60 @@ func (r InfluxReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 	}
 }
 
-// ReportConsumerOffsets reports a snapshot of the consumer group offsets.
-func (r InfluxReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
+// ReportBrokerMetadata reports a snapshot of the broker metadata.
+func (r InfluxReporter) ReportBrokerMetadata(m *store.BrokerMetadata) {
 	pts, _ := client.NewBatchPoints(client.BatchPointsConfig{
-		Database:  r.database,
-		Precision: "s",
+		Database:        r.database,
+		Precision:       "s",
+		RetentionPolicy: r.policy,
+	})
+
+	for topic, partitions := range *m {
+		for partition, metadata := range partitions {
+			if metadata == nil {
+				continue
+			}
+
+			tags := map[string]string{
+				"type":      "BrokerMetadata",
+				"topic":     topic,
+				"partition": fmt.Sprint(partition),
+			}
+
+			for key, value := range r.tags {
+				tags[key] = value
+			}
+
+			leaders := 1
+			if metadata.Leader < 0 {
+				leaders = 0
+			}
+			pt, _ := client.NewPoint(
+				r.metric,
+				tags,
+				map[string]interface{}{
+					"leaders":  leaders,
+					"replicas": len(metadata.Replicas),
+					"isr":      len(metadata.Isr),
+					"isr_diff": math.Abs(float64(len(metadata.Isr) - len(metadata.Replicas))),
+				},
+				time.Now(),
+			)
+
+			pts.AddPoint(pt)
+		}
+	}
+
+	if err := r.client.Write(pts); err != nil {
+		r.log.Error(err.Error())
+	}
+}
+
+// ReportConsumerOffsets reports a snapshot of the consumer group offsets.
+func (r InfluxReporter) ReportConsumerOffsets(o *store.ConsumerOffsets) {
+	pts, _ := client.NewBatchPoints(client.BatchPointsConfig{
+		Database:        r.database,
+		Precision:       "s",
 		RetentionPolicy: r.policy,
 	})
 

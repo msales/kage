@@ -27,6 +27,15 @@ func main() {
 	}
 	defer app.Close()
 
+	// Monitor state
+	monitorTicker := time.NewTicker(30 * time.Second)
+	defer monitorTicker.Stop()
+	go func() {
+		for range monitorTicker.C {
+			app.Collect()
+		}
+	}()
+
 	// Report state
 	reportTicker := time.NewTicker(60 * time.Second)
 	defer reportTicker.Stop()

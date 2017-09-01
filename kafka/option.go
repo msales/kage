@@ -1,44 +1,43 @@
 package kafka
 
 import (
-	"github.com/msales/kage"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
-// ClientFunc represents a function that configures the Client.
-type ClientFunc func(c *Client)
+// MonitorFunc represents a function that configures the Monitor.
+type MonitorFunc func(c *Monitor)
 
-// Log configures the logger on the Client.
-func Log(log log15.Logger) ClientFunc {
-	return func(c *Client) {
+// Log configures the logger on the Monitor.
+func Log(log log15.Logger) MonitorFunc {
+	return func(c *Monitor) {
 		c.log = log
 	}
 }
 
-// Brokers configures the brokers on the Client.
-func Brokers(brokers []string) ClientFunc {
-	return func(c *Client) {
+// Brokers configures the brokers on the Monitor.
+func Brokers(brokers []string) MonitorFunc {
+	return func(c *Monitor) {
 		c.brokers = brokers
 	}
 }
 
-// IgnoreTopics configures the topic patterns to be ignored on the Client.
-func IgnoreTopics(topics []string) ClientFunc {
-	return func(c *Client) {
+// IgnoreTopics configures the topic patterns to be ignored on the Monitor.
+func IgnoreTopics(topics []string) MonitorFunc {
+	return func(c *Monitor) {
 		c.ignoreTopics = topics
 	}
 }
 
-// IgnoreGroups configures the group patterns to be ignored on the Client.
-func IgnoreGroups(groups []string) ClientFunc {
-	return func(c *Client) {
+// IgnoreGroups configures the group patterns to be ignored on the Monitor.
+func IgnoreGroups(groups []string) MonitorFunc {
+	return func(c *Monitor) {
 		c.ignoreGroups = groups
 	}
 }
 
-// OffsetChannel configures the offset manager channel on the Client.
-func OffsetChannel(ch chan *kage.PartitionOffset) ClientFunc {
-	return func(c *Client) {
-		c.offsetCh = ch
+// StateChannel configures the offset manager channel on the Monitor.
+func StateChannel(ch chan interface{}) MonitorFunc {
+	return func(c *Monitor) {
+		c.stateCh = ch
 	}
 }
