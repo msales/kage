@@ -228,6 +228,9 @@ func (m *Monitor) getBrokerMetadata() {
 
 	ts := time.Now().Unix() * 1000
 	for _, topic := range response.Topics {
+		if containsString(m.ignoreTopics, topic.Name) {
+			continue
+		}
 		if topic.Err != sarama.ErrNoError {
 			m.log.Error(fmt.Sprintf("monitor: cannot get topic metadata %s: %v", topic.Name, topic.Err.Error()))
 			continue

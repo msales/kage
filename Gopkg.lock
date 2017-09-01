@@ -8,18 +8,6 @@
   version = "v1.12.0"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/alecthomas/template"
-  packages = [".","parse"]
-  revision = "a0175ee3bccc567396460bf5acd36800cb10c49c"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/alecthomas/units"
-  packages = ["."]
-  revision = "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
-
-[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -62,12 +50,6 @@
   version = "v1.3.1"
 
 [[projects]]
-  name = "github.com/julienschmidt/httprouter"
-  packages = ["."]
-  revision = "8c199fb6259ffc1af525cc3ad52ee60ba8359669"
-  version = "v1.1"
-
-[[projects]]
   name = "github.com/mattn/go-colorable"
   packages = ["."]
   revision = "941b50ebc6efddf4c41c8e4537a5f68a4e686b24"
@@ -78,6 +60,12 @@
   packages = ["."]
   revision = "fc9e8d8ef48496124e79ae0df75490096eccf6fe"
   version = "v0.0.2"
+
+[[projects]]
+  name = "github.com/msales/pkg"
+  packages = ["utils"]
+  revision = "62d11ccc8a6ae737c15ea462e1fdba3746776052"
+  version = "v1.5.1"
 
 [[projects]]
   name = "github.com/pierrec/lz4"
@@ -128,20 +116,20 @@
   revision = "35ef4487ce0a1ea5d4b616ffe71e34febe723695"
 
 [[projects]]
-  name = "gopkg.in/alecthomas/kingpin.v2"
-  packages = ["."]
-  revision = "1087e65c9441605df944fb12c33f0fe7072d18ca"
-  version = "v2.2.5"
-
-[[projects]]
   name = "gopkg.in/inconshreveable/log15.v2"
   packages = [".","stack","term"]
   revision = "b105bd37f74e5d9dc7b6ad7806715c7a2b83fd3f"
   version = "v2.11"
 
+[[projects]]
+  name = "gopkg.in/urfave/cli.v1"
+  packages = ["."]
+  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
+  version = "v1.20.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "44fe5ee6028b9054076aa0eb18bcb3aa14f25fe5ba5596fa9da7da187c8991ce"
+  inputs-digest = "1193aa12a819856ecfae02459ca5e4c0d011278d89915f051ee5c35c285fd33f"
   solver-name = "gps-cdcl"
   solver-version = 1
