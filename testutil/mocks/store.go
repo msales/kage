@@ -1,7 +1,7 @@
 package mocks
 
 import (
-	"github.com/msales/kage"
+	"github.com/msales/kage/store"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -10,27 +10,34 @@ type MockStore struct {
 	mock.Mock
 }
 
-// AddOffset adds an offset into the store.
-func (m *MockStore) AddOffset(o *kage.PartitionOffset) {
-	m.Called(o)
+// SetState adds a state into the store.
+func (m *MockStore) SetState(v interface{}) error {
+	args := m.Called(v)
+	return args.Error(0)
 }
 
 // BrokerOffsets returns a snapshot of the current broker offsets.
-func (m *MockStore) BrokerOffsets() kage.BrokerOffsets {
+func (m *MockStore) BrokerOffsets() store.BrokerOffsets {
 	args := m.Called()
-	return args.Get(0).(kage.BrokerOffsets)
+	return args.Get(0).(store.BrokerOffsets)
 }
 
 // ConsumerOffsets returns a snapshot of the current consumer group offsets.
-func (m *MockStore) ConsumerOffsets() kage.ConsumerOffsets {
+func (m *MockStore) ConsumerOffsets() store.ConsumerOffsets {
 	args := m.Called()
-	return args.Get(0).(kage.ConsumerOffsets)
+	return args.Get(0).(store.ConsumerOffsets)
+}
+
+// BrokerMetadata returns a snapshot of the current broker metadata.
+func (m *MockStore) BrokerMetadata() store.BrokerMetadata {
+	args := m.Called()
+	return args.Get(0).(store.BrokerMetadata)
 }
 
 // Channel get the offset channel.
-func (m *MockStore) Channel() chan *kage.PartitionOffset {
+func (m *MockStore) Channel() chan interface{} {
 	args := m.Called()
-	return args.Get(0).(chan *kage.PartitionOffset)
+	return args.Get(0).(chan interface{})
 }
 
 // Close gracefully stops the Store.

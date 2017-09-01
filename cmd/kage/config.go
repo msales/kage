@@ -14,7 +14,7 @@ func readConfig(args []string) (*kage.Config, error) {
 
 	cmdConfig.Influx.Tags = map[string]string{}
 
-	app := kingpin.New("kage", "Kafka metrics").Version(Version).DefaultEnvars()
+	app := kingpin.New("kage", "Monitor metrics").Version(Version).DefaultEnvars()
 	app.HelpFlag.Short('h')
 	app.VersionFlag.Short('v')
 

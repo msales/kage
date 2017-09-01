@@ -8,7 +8,7 @@ import (
 type Application struct {
 	Store     Store
 	Reporters *Reporters
-	Kafka     Kafka
+	Monitor   Monitor
 
 	Logger log15.Logger
 }
@@ -24,15 +24,23 @@ func (a *Application) Close() {
 		a.Store.Close()
 	}
 
-	if a.Kafka != nil {
-		a.Kafka.Close()
+	if a.Monitor != nil {
+		a.Monitor.Close()
 	}
 }
 
-// Report reports the current state of the MemoryStore to the Reporters
+// Collect collects the current state of the Kafka cluster.
+func (a *Application) Collect() {
+	a.Monitor.Collect()
+}
+
+// Report reports the current state of the MemoryStore to the Reporters.
 func (a *Application) Report() {
 	bo := a.Store.BrokerOffsets()
 	a.Reporters.ReportBrokerOffsets(&bo)
+
+	bm := a.Store.BrokerMetadata()
+	a.Reporters.ReportBrokerMetadata(&bm)
 
 	co := a.Store.ConsumerOffsets()
 	a.Reporters.ReportConsumerOffsets(&co)
@@ -40,9 +48,9 @@ func (a *Application) Report() {
 
 // IsHealthy checks the health of the Application.
 func (a *Application) IsHealthy() bool {
-	if a.Kafka == nil {
+	if a.Monitor == nil {
 		return false
 	}
 
-	return a.Kafka.IsHealthy()
+	return a.Monitor.IsHealthy()
 }

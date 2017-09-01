@@ -3,8 +3,9 @@ package reporter
 import (
 	"fmt"
 	"io"
+	"strings"
 
-	"github.com/msales/kage"
+	"github.com/msales/kage/store"
 )
 
 // ConsoleReporter represents a console reporter.
@@ -20,7 +21,7 @@ func NewConsoleReporter(w io.Writer) *ConsoleReporter {
 }
 
 // ReportBrokerOffsets reports a snapshot of the broker offsets.
-func (r ConsoleReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
+func (r ConsoleReporter) ReportBrokerOffsets(o *store.BrokerOffsets) {
 	for topic, partitions := range *o {
 		for partition, offset := range partitions {
 			if offset == nil {
@@ -42,8 +43,31 @@ func (r ConsoleReporter) ReportBrokerOffsets(o *kage.BrokerOffsets) {
 	}
 }
 
+// ReportBrokerMetadata reports a snapshot of the broker metadata.
+func (r ConsoleReporter) ReportBrokerMetadata(m *store.BrokerMetadata) {
+	for topic, partitions := range *m {
+		for partition, metadata := range partitions {
+			if metadata == nil {
+				continue
+			}
+
+			io.WriteString(
+				r.w,
+				fmt.Sprintf(
+					"%s:%d leader:%d replicas:%s isr:%s \n",
+					topic,
+					partition,
+					metadata.Leader,
+					strings.Replace(strings.Trim(fmt.Sprint(metadata.Replicas), "[]"), " ", ",", -1),
+					strings.Replace(strings.Trim(fmt.Sprint(metadata.Isr), "[]"), " ", ",", -1),
+				),
+			)
+		}
+	}
+}
+
 // ReportConsumerOffsets reports a snapshot of the consumer group offsets.
-func (r ConsoleReporter) ReportConsumerOffsets(o *kage.ConsumerOffsets) {
+func (r ConsoleReporter) ReportConsumerOffsets(o *store.ConsumerOffsets) {
 	for group, topics := range *o {
 		for topic, partitions := range topics {
 			for partition, offset := range partitions {

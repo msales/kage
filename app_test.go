@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/msales/kage"
+	"github.com/msales/kage/store"
 	"github.com/msales/kage/testutil/mocks"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,36 +19,36 @@ func TestApplication_Close(t *testing.T) {
 	store := new(mocks.MockStore)
 	store.On("Close").Return()
 
-	kafka := new(mocks.MockKafka)
-	kafka.On("Close").Return()
+	monitor := new(mocks.MockMonitor)
+	monitor.On("Close").Return()
 
 	app := &kage.Application{
-		Store: store,
-		Kafka: kafka,
+		Store:   store,
+		Monitor: monitor,
 	}
 
 	app.Close()
 
 	store.AssertExpectations(t)
-	kafka.AssertExpectations(t)
+	monitor.AssertExpectations(t)
 }
 
 func TestApplication_IsHealthy(t *testing.T) {
 	reporters := &kage.Reporters{}
 
-	kafka := new(mocks.MockKafka)
-	kafka.On("IsHealthy").Return(true).Once()
-	kafka.On("IsHealthy").Return(false).Once()
+	monitor := new(mocks.MockMonitor)
+	monitor.On("IsHealthy").Return(true).Once()
+	monitor.On("IsHealthy").Return(false).Once()
 
 	app := &kage.Application{
 		Reporters: reporters,
-		Kafka:     kafka,
+		Monitor:   monitor,
 	}
 
 	assert.True(t, app.IsHealthy())
 	assert.False(t, app.IsHealthy())
 
-	kafka.AssertExpectations(t)
+	monitor.AssertExpectations(t)
 }
 
 func TestApplication_IsHealthyNoServices(t *testing.T) {
@@ -57,8 +58,8 @@ func TestApplication_IsHealthyNoServices(t *testing.T) {
 }
 
 func TestApplication_Report(t *testing.T) {
-	bo := kage.BrokerOffsets{}
-	co := kage.ConsumerOffsets{}
+	bo := store.BrokerOffsets{}
+	co := store.ConsumerOffsets{}
 
 	store := new(mocks.MockStore)
 	store.On("BrokerOffsets").Return(bo)
@@ -80,4 +81,17 @@ func TestApplication_Report(t *testing.T) {
 
 	store.AssertExpectations(t)
 	reporter.AssertExpectations(t)
+}
+
+func TestApplication_Collect(t *testing.T) {
+	monitor := new(mocks.MockMonitor)
+	monitor.On("Collect").Once()
+
+	app := &kage.Application{
+		Monitor: monitor,
+	}
+
+	app.Collect()
+
+	monitor.AssertExpectations(t)
 }

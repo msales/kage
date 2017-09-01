@@ -14,7 +14,7 @@ type Config struct {
 	Server ServerConfig `json:"server,omitempty"`
 }
 
-// KafkaConfig represents the configuration for Kafka.
+// KafkaConfig represents the configuration for Monitor.
 type KafkaConfig struct {
 	Brokers []string          `json:"brokers"`
 	Ignore  KafkaIgnoreConfig `json:"ignore,omitempty"`
@@ -57,7 +57,7 @@ func MergeConfig(a, b *Config) *Config {
 		result.LogLevel = b.LogLevel
 	}
 
-	// Kafka
+	// Monitor
 	if len(b.Kafka.Brokers) > 0 {
 		result.Kafka.Brokers = b.Kafka.Brokers
 	}

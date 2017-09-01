@@ -3,14 +3,13 @@ package kafka
 import (
 	"testing"
 
-	"github.com/msales/kage"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
 func TestBrokers(t *testing.T) {
 	brokers := []string{"127.0.0.1"}
-	c := &Client{}
+	c := &Monitor{}
 
 	Brokers(brokers)(c)
 
@@ -19,7 +18,7 @@ func TestBrokers(t *testing.T) {
 
 func TestIgnoreGroups(t *testing.T) {
 	i := []string{"test"}
-	c := &Client{}
+	c := &Monitor{}
 
 	IgnoreGroups(i)(c)
 
@@ -28,7 +27,7 @@ func TestIgnoreGroups(t *testing.T) {
 
 func TestIgnoreTopics(t *testing.T) {
 	i := []string{"test"}
-	c := &Client{}
+	c := &Monitor{}
 
 	IgnoreTopics(i)(c)
 
@@ -37,7 +36,7 @@ func TestIgnoreTopics(t *testing.T) {
 
 func TestLog(t *testing.T) {
 	log := log15.New()
-	c := &Client{}
+	c := &Monitor{}
 
 	Log(log)(c)
 
@@ -45,10 +44,10 @@ func TestLog(t *testing.T) {
 }
 
 func TestOffsetChannel(t *testing.T) {
-	ch := make(chan *kage.PartitionOffset)
-	c := &Client{}
+	ch := make(chan interface{})
+	c := &Monitor{}
 
-	OffsetChannel(ch)(c)
+	StateChannel(ch)(c)
 
-	assert.Equal(t, ch, c.offsetCh)
+	assert.Equal(t, ch, c.stateCh)
 }
