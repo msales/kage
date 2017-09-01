@@ -1,5 +1,5 @@
 # Build container
-FROM golang:1.8 as builder
+FROM golang:1.9 as builder
 
 RUN go get -u github.com/golang/dep/cmd/dep
 
@@ -19,4 +19,4 @@ ENV KAGE_SERVER "true"
 ENV KAGE_PORT "80"
 
 EXPOSE 80
-CMD ["./kage"]
+CMD ["./kage", "agent"]

@@ -9,7 +9,7 @@ services:
     links:
       - kafka
     environment:
-      - KAGE_BROKERS=kafka:9092
+      - KAGE_KAFKA_BROKERS=kafka:9092
   kafka:
     image: 'spotify/kafka:latest'
     environment:

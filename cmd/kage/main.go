@@ -54,7 +54,7 @@ var Commands = []cli.Command{
 			cli.StringSliceFlag{
 				Name:   FlagKafkaBrokers,
 				Usage:  "Specify the Kafka seed brokers",
-				EnvVar: "BIDDER_KAFKA_BROKERS",
+				EnvVar: "KAGE_KAFKA_BROKERS",
 			},
 			cli.StringSliceFlag{
 				Name:   FlagKafkaIgnoreTopics,
@@ -115,6 +115,7 @@ var Commands = []cli.Command{
 func main() {
 	app := cli.NewApp()
 	app.Name = "kage"
+	app.Usage = "A Kafka monitoring agent"
 	app.Version = Version
 	app.Commands = Commands
 

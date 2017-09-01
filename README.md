@@ -36,34 +36,30 @@ and then you should get one service per configuration-file in /etc/kage/.
 
 ## Configuration
 
-Kage can be configured with configuration files, command line flags and environment variables. 
-
-Kage uses an inheritance model for configuration. The order of precedence is: command line flags, 
-environment variables, configuration files.
+Kage can be configured with command line flags and environment variables. 
  
 #### Command Line Flags
 
-| Flag | Options | Multiple Allowed | Description |
-| ---- | ------- | ---------------- | ----------- |
-| --config | | Yes | The path to the JSON configuration file.  |
-| --log | stdout, file | No | The type of log to use. |
-| --log-file | | No | The path to the file to log to. |
-| --log-level | debug, info, warn, error | No | The log level to use. |
-| --brokers | | Yes | The kafka seed brokers connect to. Format: 'ip:port'. |
-| --ignore-topics | | Yes | The kafka topic patterns to ignore. This may contian wildcards. |
-| --ignore-groups | | Yes | The kafka consumer group patterns to ignore. This may contian wildcards. |
-| --reporters | influx, stdout | Yes | The reporters to use. |
-| --influx | | No | The DSN of the InfluxDB server to report to. Format: http://user:pass@ip:port/database'. |
-| --influx-metric | | No | The measurement name to report statistics under. |
-| --influx-policy | | No | The retention policy to report statistics under. |
-| --influx-tags | | Yes | Additional tags to add to the statistics. Format: 'key:value' |
-| --addr | | No | The address to bind to for the http server. |
+| Flag | Options | Multiple Allowed | Description | Environment Variable |
+| ---- | ------- | ---------------- | ----------- | -------------------- |
+| --log | stdout, file | No | The type of log to use. | KAGE_LOG |
+| --log.file | | No | The path to the file to log to. | KAGE_LOG_FILE |
+| --log.level | debug, info, warn, error | No | The log level to use. | KAGE_LOG_LEVEL |
+| --kafka.brokers | | Yes | The kafka seed brokers connect to. Format: 'ip:port'. | KAGE_KAFKA_BROKERS |
+| --kafka.ignore-topics | | Yes | The kafka topic patterns to ignore. This may contian wildcards. | KAGE_KAFKA_IGNORE_TOPICS |
+| --kafka.ignore-groups | | Yes | The kafka consumer group patterns to ignore. This may contian wildcards. | KAGE_KAFKA_IGNORE_GROUPS |
+| --reporters | influx, stdout | Yes | The reporters to use. | KAGE_REPORTERS |
+| --influx | | No | The DSN of the InfluxDB server to report to. Format: http://user:pass@ip:port/database'. | KAGE_INFLUX |
+| --influx.metric | | No | The measurement name to report statistics under. | KAGE_INFLUX_METRIC |
+| --influx.policy | | No | The retention policy to report statistics under. | KAGE_INFLUX_POLICY |
+| --influx.tags | | Yes | Additional tags to add to the statistics. Format: 'key=value' | KAGE_INFLUX_TAGS |
+| --server | | No | The address to bind to for the http server. | KAGE_SERVER |
+| --port | | No | The address to bind to for the http server. | KAGE_PORT |
 
-#### Environment Variables
+##### Multi value environment variables
 
-Environment variable names can be derived from the command line flags, prefixing them with ```KAGE_```
-and using uppercase changing - to _, e.g. ```--log-level``` becomes ```KAGE_LOG_LEVEL```.
-Where multiple command line flags are allowed, environment variable values should be separated by a new line character.
+When using environment variables where mutltiple values are allowed, the values should be comma seperated.
+E.g. ```--reporters=stdout --reporters=influx``` should become ```KAGE_REPORTERS=stdout,influx```.
 
 ## HTTP Endpoints
 
