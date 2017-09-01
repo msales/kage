@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/url"
 	"os"
 	"strings"
@@ -10,12 +11,14 @@ import (
 	"github.com/msales/kage/kafka"
 	"github.com/msales/kage/reporter"
 	"github.com/msales/kage/store"
+	"github.com/msales/kage/utils"
 	"gopkg.in/inconshreveable/log15.v2"
+	"gopkg.in/urfave/cli.v1"
 )
 
 // Application =============================
 
-func newApplication(c *kage.Config) (*kage.Application, error) {
+func newApplication(c *cli.Context) (*kage.Application, error) {
 	logger, err := newLogger(c)
 	if err != nil {
 		return nil, err
@@ -32,9 +35,9 @@ func newApplication(c *kage.Config) (*kage.Application, error) {
 	}
 
 	monitor, err := kafka.New(
-		kafka.Brokers(c.Kafka.Brokers),
-		kafka.IgnoreTopics(c.Kafka.Ignore.Topics),
-		kafka.IgnoreGroups(c.Kafka.Ignore.Groups),
+		kafka.Brokers(c.StringSlice(FlagKafkaBrokers)),
+		kafka.IgnoreTopics(c.StringSlice(FlagKafkaIgnoreTopics)),
+		kafka.IgnoreGroups(c.StringSlice(FlagKafkaIgnoreGroups)),
 		kafka.StateChannel(memStore.Channel()),
 		kafka.Log(logger),
 	)
@@ -54,13 +57,13 @@ func newApplication(c *kage.Config) (*kage.Application, error) {
 // Reporters ===============================
 
 // newReporters creates reporters from the config.
-func newReporters(config *kage.Config, logger log15.Logger) (*kage.Reporters, error) {
+func newReporters(c *cli.Context, logger log15.Logger) (*kage.Reporters, error) {
 	rs := &kage.Reporters{}
 
-	for _, name := range config.Reporters {
+	for _, name := range c.StringSlice(FlagReporters) {
 		switch name {
 		case "influx":
-			r, err := newInfluxReporter(config.Influx, logger)
+			r, err := newInfluxReporter(c, logger)
 			if err != nil {
 				return nil, err
 			}
@@ -70,6 +73,9 @@ func newReporters(config *kage.Config, logger log15.Logger) (*kage.Reporters, er
 		case "stdout":
 			r := reporter.NewConsoleReporter(os.Stdout)
 			rs.Add(name, r)
+
+		default:
+			return nil, fmt.Errorf("unknown reporter \"%s\"", name)
 		}
 	}
 
@@ -77,8 +83,8 @@ func newReporters(config *kage.Config, logger log15.Logger) (*kage.Reporters, er
 }
 
 // newInfluxReporter create a new InfluxDB reporter.
-func newInfluxReporter(config kage.InfluxConfig, logger log15.Logger) (kage.Reporter, error) {
-	dsn, err := url.Parse(config.DSN)
+func newInfluxReporter(c *cli.Context, logger log15.Logger) (kage.Reporter, error) {
+	dsn, err := url.Parse(c.String(FlagInflux))
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +97,7 @@ func newInfluxReporter(config kage.InfluxConfig, logger log15.Logger) (kage.Repo
 	username := dsn.User.Username()
 	password, _ := dsn.User.Password()
 
-	c, err := client.NewHTTPClient(client.HTTPConfig{
+	influx, err := client.NewHTTPClient(client.HTTPConfig{
 		Addr:     addr,
 		Username: username,
 		Password: password,
@@ -101,11 +107,11 @@ func newInfluxReporter(config kage.InfluxConfig, logger log15.Logger) (kage.Repo
 	}
 	db := strings.Trim(dsn.Path, "/")
 
-	return reporter.NewInfluxReporter(c,
+	return reporter.NewInfluxReporter(influx,
 		reporter.Database(db),
-		reporter.Metric(config.Metric),
-		reporter.Policy(config.Policy),
-		reporter.Tags(config.Tags),
+		reporter.Metric(c.String(FlagInfluxMetric)),
+		reporter.Policy(c.String(FlagInfluxPolicy)),
+		reporter.Tags(utils.SplitMap(c.StringSlice(FlagInfluxTags), "=")),
 		reporter.Log(logger),
 	), nil
 }
@@ -113,15 +119,15 @@ func newInfluxReporter(config kage.InfluxConfig, logger log15.Logger) (kage.Repo
 // Logger ==================================
 
 // newLogger creates a new logger from config.
-func newLogger(config *kage.Config) (log15.Logger, error) {
-	lvl, err := log15.LvlFromString(config.LogLevel)
+func newLogger(c *cli.Context) (log15.Logger, error) {
+	lvl, err := log15.LvlFromString(c.String(FlagLogLevel))
 	if err != nil {
 		return nil, err
 	}
 
 	h := log15.StreamHandler(os.Stderr, log15.LogfmtFormat())
-	if config.Log == "file" {
-		h = log15.Must.FileHandler(config.LogFile, log15.LogfmtFormat())
+	if c.String(FlagLog) == "file" {
+		h = log15.Must.FileHandler(c.String(FlagLogFile), log15.LogfmtFormat())
 	}
 
 	log := log15.New()

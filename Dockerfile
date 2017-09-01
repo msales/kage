@@ -15,7 +15,8 @@ FROM scratch
 COPY --from=builder /go/src/github.com/msales/kage/kage .
 COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 
-ENV KAGE_ADDR ":80"
+ENV KAGE_SERVER "true"
+ENV KAGE_PORT "80"
 
 EXPOSE 80
 CMD ["./kage"]
