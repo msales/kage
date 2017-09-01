@@ -3,7 +3,7 @@ package utils_test
 import (
 	"testing"
 
-	"github.com/msales/pkg/utils"
+	"github.com/msales/kage/utils"
 	"github.com/stretchr/testify/assert"
 )
 
