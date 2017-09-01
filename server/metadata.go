@@ -2,8 +2,6 @@ package server
 
 import (
 	"net/http"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 type topicMetadata struct {
@@ -19,7 +17,7 @@ type partitionMetadata struct {
 }
 
 // MetadataHandler handles requests for topic metadata.
-func (s *Server) MetadataHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) MetadataHandler(w http.ResponseWriter, r *http.Request) {
 	metadata := s.Store.BrokerMetadata()
 
 	topics := []topicMetadata{}

@@ -7,8 +7,8 @@
   version = "1.2.4"
 
 [[constraint]]
-  name = "github.com/julienschmidt/httprouter"
-  version = "1.1.0"
+  name = "github.com/go-zoo/bone"
+  version = "1.*"
 
 [[constraint]]
   name = "github.com/ryanuber/go-glob"
@@ -19,8 +19,8 @@
   version = "1.1.4"
 
 [[constraint]]
-  branch = "master"
-  name = "gopkg.in/alecthomas/kingpin.v2"
+  name = "gopkg.in/urfave/cli.v1"
+  version = "1.*"
 
 [[constraint]]
   name = "gopkg.in/inconshreveable/log15.v2"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-zoo/bone"
 	"github.com/msales/kage"
 )
 
@@ -13,24 +13,24 @@ import (
 type Server struct {
 	*kage.Application
 
-	mux *httprouter.Router
+	mux *bone.Mux
 }
 
 // New creates a new instance of Server.
 func New(app *kage.Application) *Server {
 	s := &Server{
 		Application: app,
-		mux:         httprouter.New(),
+		mux:         bone.New(),
 	}
 
-	s.mux.GET("/brokers", s.BrokersHandler)
-	s.mux.GET("/brokers/health", s.BrokersHealthHandler)
-	s.mux.GET("/metadata", s.MetadataHandler)
-	s.mux.GET("/topics", s.TopicsHandler)
-	s.mux.GET("/consumers", s.ConsumerGroupsHandler)
-	s.mux.GET("/consumers/:group", s.ConsumerGroupHandler)
+	s.mux.GetFunc("/brokers", s.BrokersHandler)
+	s.mux.GetFunc("/brokers/health", s.BrokersHealthHandler)
+	s.mux.GetFunc("/metadata", s.MetadataHandler)
+	s.mux.GetFunc("/topics", s.TopicsHandler)
+	s.mux.GetFunc("/consumers", s.ConsumerGroupsHandler)
+	s.mux.GetFunc("/consumers/:group", s.ConsumerGroupHandler)
 
-	s.mux.GET("/health", s.HealthHandler)
+	s.mux.GetFunc("/health", s.HealthHandler)
 
 	return s
 }
@@ -47,7 +47,7 @@ type brokerStatus struct {
 }
 
 // BrokersHandler handles requests for brokers status.
-func (s *Server) BrokersHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) BrokersHandler(w http.ResponseWriter, r *http.Request) {
 	brokers := []brokerStatus{}
 	for _, b := range s.Monitor.Brokers() {
 		brokers = append(brokers, brokerStatus{
@@ -60,7 +60,7 @@ func (s *Server) BrokersHandler(w http.ResponseWriter, r *http.Request, _ httpro
 }
 
 // BrokersHealthHandler handles requests for brokers health.
-func (s *Server) BrokersHealthHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) BrokersHealthHandler(w http.ResponseWriter, r *http.Request) {
 	for _, b := range s.Monitor.Brokers() {
 		if !b.Connected {
 			w.WriteHeader(500)
@@ -70,7 +70,7 @@ func (s *Server) BrokersHealthHandler(w http.ResponseWriter, r *http.Request, _ 
 }
 
 // HealthHandler handles health requests.
-func (s *Server) HealthHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) HealthHandler(w http.ResponseWriter, r *http.Request) {
 	if !s.IsHealthy() {
 		w.WriteHeader(500)
 		return

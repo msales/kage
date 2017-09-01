@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-zoo/bone"
 	"github.com/msales/kage/store"
 )
 
@@ -21,7 +21,7 @@ type consumerPartition struct {
 }
 
 // ConsumerGroupsHandler handles requests for consumer groups offsets.
-func (s *Server) ConsumerGroupsHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) ConsumerGroupsHandler(w http.ResponseWriter, r *http.Request) {
 	offsets := s.Store.ConsumerOffsets()
 
 	groups := []consumerGroup{}
@@ -33,10 +33,10 @@ func (s *Server) ConsumerGroupsHandler(w http.ResponseWriter, r *http.Request, _
 }
 
 // ConsumerGroupHandler handles requests for a consumer group offsets.
-func (s *Server) ConsumerGroupHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (s *Server) ConsumerGroupHandler(w http.ResponseWriter, r *http.Request) {
 	offsets := s.Store.ConsumerOffsets()
 
-	group := params.ByName("group")
+	group := bone.GetValue(r, "group")
 	topics, ok := offsets[group]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)

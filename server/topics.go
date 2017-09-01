@@ -2,8 +2,6 @@ package server
 
 import (
 	"net/http"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 type brokerTopics struct {
@@ -20,7 +18,7 @@ type brokerPartition struct {
 }
 
 // TopicsHandler handles requests for topic offsets.
-func (s *Server) TopicsHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) TopicsHandler(w http.ResponseWriter, r *http.Request) {
 	offsets := s.Store.BrokerOffsets()
 
 	topics := []brokerTopics{}
