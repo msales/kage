@@ -21,9 +21,9 @@ type Broker struct {
 type Monitor struct {
 	brokers []string
 
-	client               sarama.Client
-	refreshTicker        *time.Ticker
-	stateCh              chan interface{}
+	client        sarama.Client
+	refreshTicker *time.Ticker
+	stateCh       chan interface{}
 
 	ignoreTopics []string
 	ignoreGroups []string

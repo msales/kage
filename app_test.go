@@ -59,16 +59,19 @@ func TestApplication_IsHealthyNoServices(t *testing.T) {
 
 func TestApplication_Report(t *testing.T) {
 	bo := store.BrokerOffsets{}
+	bm := store.BrokerMetadata{}
 	co := store.ConsumerOffsets{}
 
 	store := new(mocks.MockStore)
 	store.On("BrokerOffsets").Return(bo)
+	store.On("BrokerMetadata").Return(bm)
 	store.On("ConsumerOffsets").Return(co)
 
 	reporters := &kage.Reporters{}
 
 	reporter := new(mocks.MockReporter)
 	reporter.On("ReportBrokerOffsets", &bo).Return()
+	reporter.On("ReportBrokerMetadata", &bm).Return()
 	reporter.On("ReportConsumerOffsets", &co).Return()
 	reporters.Add("test", reporter)
 

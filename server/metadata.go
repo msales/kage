@@ -18,7 +18,7 @@ type partitionMetadata struct {
 	Isr       []int32 `json:"isr"`
 }
 
-// TopicsHandler handles requests for topic offsets.
+// MetadataHandler handles requests for topic metadata.
 func (s *Server) MetadataHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	metadata := s.Store.BrokerMetadata()
 
