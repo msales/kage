@@ -86,6 +86,10 @@ Get the current kafka health status. Returns a 200 status code if all brokers ar
 
 Get a topic offset information in json format.
 
+#### GET /metadata
+
+Get a topic metadata information in json format.
+
 #### GET /consumers
 
 Get a consumer group offset information in json format.
