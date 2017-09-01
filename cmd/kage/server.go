@@ -42,8 +42,7 @@ func runServer(c *cli.Context) {
 		srv := newServer(app)
 		h := http.Server{Addr: ":" + port, Handler: srv}
 		defer func() {
-			ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-			h.Shutdown(ctx)
+			h.Shutdown(context.Background())
 		}()
 		go func() {
 			log.Printf("Starting on port %s.\n", port)
