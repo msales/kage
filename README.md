@@ -53,7 +53,7 @@ Kage can be configured with command line flags and environment variables.
 | --influx.metric | | No | The measurement name to report statistics under. | KAGE_INFLUX_METRIC |
 | --influx.policy | | No | The retention policy to report statistics under. | KAGE_INFLUX_POLICY |
 | --influx.tags | | Yes | Additional tags to add to the statistics. Format: 'key=value' | KAGE_INFLUX_TAGS |
-| --server | | No | The address to bind to for the http server. | KAGE_SERVER |
+| --server | | No | Start the http server. | KAGE_SERVER |
 | --port | | No | The address to bind to for the http server. | KAGE_PORT |
 
 ##### Multi value environment variables
