@@ -20,10 +20,9 @@ We decided that we wanted to get the metrics straight out of Kafka and feed them
 ## Basic Installation
 
 Grab a binary from the Releases or clone the repo and build it yourself.  
-Fill the provided [sample configuration](example.json) with appropriate configuration for your setup, copy both files 
-to the host you want to run kage on and run
+Run the binary with the configuration options found below.
 ```
-kage --config=example.json
+kage agent <CONFIG OPTIONS>
 
 ```
 
