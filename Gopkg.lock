@@ -50,6 +50,12 @@
   version = "v1.3.1"
 
 [[projects]]
+  name = "github.com/joho/godotenv"
+  packages = [".","autoload"]
+  revision = "726cc8b906e3d31c70a9671c90a13716a8d3f50d"
+  version = "v1.1"
+
+[[projects]]
   name = "github.com/mattn/go-colorable"
   packages = ["."]
   revision = "941b50ebc6efddf4c41c8e4537a5f68a4e686b24"
@@ -60,12 +66,6 @@
   packages = ["."]
   revision = "fc9e8d8ef48496124e79ae0df75490096eccf6fe"
   version = "v0.0.2"
-
-[[projects]]
-  name = "github.com/msales/pkg"
-  packages = ["utils"]
-  revision = "62d11ccc8a6ae737c15ea462e1fdba3746776052"
-  version = "v1.5.1"
 
 [[projects]]
   name = "github.com/pierrec/lz4"
@@ -130,6 +130,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1193aa12a819856ecfae02459ca5e4c0d011278d89915f051ee5c35c285fd33f"
+  inputs-digest = "17d0da0a299e6dd3b59fd7cc4eecf301e6155e1721751458cefdd4d7ac4d9e4e"
   solver-name = "gps-cdcl"
   solver-version = 1
