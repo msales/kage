@@ -48,7 +48,7 @@ func New(opts ...MonitorFunc) (*Monitor, error) {
 	}
 	monitor.client = kafka
 
-	monitor.refreshTicker = time.NewTicker(10 * time.Minute)
+	monitor.refreshTicker = time.NewTicker(2 * time.Minute)
 	go func() {
 		for range monitor.refreshTicker.C {
 			monitor.refreshMetadata()
