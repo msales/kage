@@ -47,5 +47,5 @@ func (s *Server) TopicsHandler(w http.ResponseWriter, r *http.Request) {
 		topics = append(topics, bt)
 	}
 
-	s.writeJson(w, topics)
+	s.writeJSON(w, topics)
 }

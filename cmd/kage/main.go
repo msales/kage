@@ -8,6 +8,7 @@ import (
 
 import _ "github.com/joho/godotenv/autoload"
 
+// Flag constants declared for CLI use.
 const (
 	FlagLog      = "log"
 	FlagLogFile  = "log.file"
@@ -28,7 +29,7 @@ const (
 	FlagPort   = "port"
 )
 
-var CommonFlags = []cli.Flag{
+var commonFlags = []cli.Flag{
 	cli.StringFlag{
 		Name:   FlagLog,
 		Value:  "stdout",
@@ -48,7 +49,7 @@ var CommonFlags = []cli.Flag{
 	},
 }
 
-var Commands = []cli.Command{
+var commands = []cli.Command{
 	{
 		Name:  "agent",
 		Usage: "Run the kage agent",
@@ -109,7 +110,7 @@ var Commands = []cli.Command{
 				Usage:  "Specify the port to run the server on",
 				EnvVar: "KAGE_PORT",
 			},
-		}, CommonFlags...),
+		}, commonFlags...),
 		Action: runServer,
 	},
 }
@@ -119,7 +120,7 @@ func main() {
 	app.Name = "kage"
 	app.Usage = "A Kafka monitoring agent"
 	app.Version = Version
-	app.Commands = Commands
+	app.Commands = commands
 
 	app.Run(os.Args)
 }

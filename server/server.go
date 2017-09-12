@@ -56,7 +56,7 @@ func (s *Server) BrokersHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	s.writeJson(w, brokers)
+	s.writeJSON(w, brokers)
 }
 
 // BrokersHealthHandler handles requests for brokers health.
@@ -79,7 +79,7 @@ func (s *Server) HealthHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 
-func (s *Server) writeJson(w http.ResponseWriter, v interface{}) {
+func (s *Server) writeJSON(w http.ResponseWriter, v interface{}) {
 	data, err := json.Marshal(v)
 	if err != nil {
 		w.WriteHeader(500)

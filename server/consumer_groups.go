@@ -29,7 +29,7 @@ func (s *Server) ConsumerGroupsHandler(w http.ResponseWriter, r *http.Request) {
 		groups = append(groups, createConsumerGroup(group, topics)...)
 	}
 
-	s.writeJson(w, groups)
+	s.writeJSON(w, groups)
 }
 
 // ConsumerGroupHandler handles requests for a consumer group offsets.
@@ -45,7 +45,7 @@ func (s *Server) ConsumerGroupHandler(w http.ResponseWriter, r *http.Request) {
 
 	groups := createConsumerGroup(group, topics)
 
-	s.writeJson(w, groups)
+	s.writeJSON(w, groups)
 }
 
 func createConsumerGroup(group string, topics map[string][]*store.ConsumerOffset) []consumerGroup {
