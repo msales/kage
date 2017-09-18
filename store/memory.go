@@ -176,6 +176,10 @@ func (m *MemoryStore) CleanConsumerOffsets() {
 			maxDuration := int64(0)
 
 			for _, offset := range partitions {
+				if offset == nil {
+					continue
+				}
+
 				duration := ts - offset.Timestamp
 				if duration > maxDuration {
 					maxDuration = duration
