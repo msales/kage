@@ -222,6 +222,7 @@ func (m *MemoryStore) addBrokerOffset(o *BrokerPartitionOffset) {
 		for i := len(topic); i < o.TopicPartitionCount; i++ {
 			topic = append(topic, nil)
 		}
+		m.state.broker[o.Topic] = topic
 	}
 
 	partition := topic[o.Partition]
@@ -263,6 +264,7 @@ func (m *MemoryStore) addConsumerOffset(o *ConsumerPartitionOffset) {
 		for i := len(topic); i < partitionCount; i++ {
 			topic = append(topic, nil)
 		}
+		group[o.Topic] = topic
 	}
 
 	offset := topic[o.Partition]
@@ -290,7 +292,7 @@ func (m *MemoryStore) getBrokerOffset(topic string, partition int32) (int64, int
 		return -1, -1
 	}
 
-	if partition < 0 || partition > int32(len(brokerTopic)) {
+	if partition < 0 || partition > int32(len(brokerTopic)-1) {
 		return -1, -1
 	}
 
