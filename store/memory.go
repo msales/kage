@@ -292,7 +292,7 @@ func (m *MemoryStore) getBrokerOffset(topic string, partition int32) (int64, int
 		return -1, -1
 	}
 
-	if partition < 0 || partition > int32(len(brokerTopic) - 1) {
+	if partition < 0 || partition > int32(len(brokerTopic)-1) {
 		return -1, -1
 	}
 
