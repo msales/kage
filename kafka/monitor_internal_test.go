@@ -9,16 +9,16 @@ import (
 )
 
 func TestMonitor_Brokers(t *testing.T) {
-	seedBroker := sarama.NewMockBroker(t, 1)
-	leader := sarama.NewMockBroker(t, 2)
+	broker0 := sarama.NewMockBroker(t, 0)
+	broker1 := sarama.NewMockBroker(t, 1)
+	broker0.SetHandlerByMap(map[string]sarama.MockResponse{
+		"MetadataRequest": sarama.NewMockMetadataResponse(t).
+			SetBroker(broker0.Addr(), broker0.BrokerID()).
+			SetBroker(broker1.Addr(), broker1.BrokerID()).
+			SetLeader("foo", 0, broker1.BrokerID()),
+	})
 
-	metadata := new(sarama.MetadataResponse)
-	metadata.AddTopicPartition("foo", 0, leader.BrokerID(), nil, nil, sarama.ErrNoError)
-	metadata.AddBroker(seedBroker.Addr(), seedBroker.BrokerID())
-	metadata.AddBroker(leader.Addr(), leader.BrokerID())
-	seedBroker.Returns(metadata)
-
-	kafka, err := sarama.NewClient([]string{seedBroker.Addr()}, sarama.NewConfig())
+	kafka, err := sarama.NewClient([]string{broker0.Addr()}, sarama.NewConfig())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,23 +27,40 @@ func TestMonitor_Brokers(t *testing.T) {
 
 	assert.Len(t, c.Brokers(), 2)
 
-	seedBroker.Close()
-	leader.Close()
+	broker0.Close()
+	broker1.Close()
+}
+
+func TestMonitor_RefreshMetadata(t *testing.T) {
+	broker := sarama.NewMockBroker(t, 0)
+	broker.SetHandlerByMap(map[string]sarama.MockResponse{
+		"MetadataRequest": sarama.NewMockMetadataResponse(t).
+			SetBroker(broker.Addr(), broker.BrokerID()).
+			SetLeader("foo", 0, broker.BrokerID()),
+	})
+
+	kafka, err := sarama.NewClient([]string{broker.Addr()}, sarama.NewConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	c := &Monitor{client: kafka}
+
+	c.refreshMetadata()
+
+	broker.Close()
 }
 
 func TestMonitor_IsHealthy(t *testing.T) {
-	seedBroker := sarama.NewMockBroker(t, 1)
-	leader := sarama.NewMockBroker(t, 2)
+	broker := sarama.NewMockBroker(t, 0)
+	broker.SetHandlerByMap(map[string]sarama.MockResponse{
+		"MetadataRequest": sarama.NewMockMetadataResponse(t).
+			SetBroker(broker.Addr(), broker.BrokerID()).
+			SetLeader("foo", 0, broker.BrokerID()),
+	})
 
-	metadata := new(sarama.MetadataResponse)
-	metadata.AddTopicPartition("foo", 0, leader.BrokerID(), nil, nil, sarama.ErrNoError)
-	metadata.AddBroker(seedBroker.Addr(), seedBroker.BrokerID())
-	metadata.AddBroker(leader.Addr(), leader.BrokerID())
-	seedBroker.Returns(metadata)
-
-	kafka, err := sarama.NewClient([]string{seedBroker.Addr()}, sarama.NewConfig())
+	kafka, err := sarama.NewClient([]string{broker.Addr()}, sarama.NewConfig())
 	assert.NoError(t, err)
-	// Open all broker connections
 	for _, b := range kafka.Brokers() {
 		b.Open(kafka.Config())
 	}
@@ -59,61 +76,49 @@ func TestMonitor_IsHealthy(t *testing.T) {
 
 	assert.False(t, c.IsHealthy())
 
-	seedBroker.Close()
-	leader.Close()
+	broker.Close()
 }
 
 func TestMonitor_getBrokerOffsets(t *testing.T) {
-	seedBroker := sarama.NewMockBroker(t, 1)
-	leader := sarama.NewMockBroker(t, 2)
+	broker := sarama.NewMockBroker(t, 0)
+	broker.SetHandlerByMap(map[string]sarama.MockResponse{
+		"MetadataRequest": sarama.NewMockMetadataResponse(t).
+			SetBroker(broker.Addr(), broker.BrokerID()).
+			SetLeader("foo", 0, broker.BrokerID()).
+			SetLeader("ignore", 0, broker.BrokerID()),
+		"OffsetRequest": sarama.NewMockOffsetResponse(t).
+			SetOffset("foo", 0, sarama.OffsetOldest, 0).
+			SetOffset("foo", 0, sarama.OffsetNewest, 123),
+	})
 
-	metadata := new(sarama.MetadataResponse)
-	metadata.AddTopicPartition("foo", 0, leader.BrokerID(), nil, nil, sarama.ErrNoError)
-	metadata.AddBroker(leader.Addr(), leader.BrokerID())
-	seedBroker.Returns(metadata)
-
-	oldestOffsetResponse := new(sarama.OffsetResponse)
-	oldestOffsetResponse.AddTopicPartition("foo", 0, 0)
-	leader.Returns(oldestOffsetResponse)
-
-	newestOffsetResponse := new(sarama.OffsetResponse)
-	newestOffsetResponse.AddTopicPartition("foo", 0, 123)
-	leader.Returns(newestOffsetResponse)
-
-	kafka, err := sarama.NewClient([]string{seedBroker.Addr()}, nil)
+	kafka, err := sarama.NewClient([]string{broker.Addr()}, nil)
 	assert.NoError(t, err)
 
 	c := &Monitor{
-		client:  kafka,
-		stateCh: make(chan interface{}, 100),
-		log:     testutil.Logger,
+		client:       kafka,
+		stateCh:      make(chan interface{}, 100),
+		log:          testutil.Logger,
+		ignoreTopics: []string{"ignore"},
 	}
 
 	c.getBrokerOffsets()
 
 	assert.Len(t, c.stateCh, 2)
 
-	seedBroker.Close()
-	leader.Close()
+	broker.Close()
 }
 
 func TestMonitor_getBrokerMetadata(t *testing.T) {
-	seedBroker := sarama.NewMockBroker(t, 1)
-	leader := sarama.NewMockBroker(t, 2)
+	broker := sarama.NewMockBroker(t, 0)
+	broker.SetHandlerByMap(map[string]sarama.MockResponse{
+		"MetadataRequest": sarama.NewMockMetadataResponse(t).
+			SetBroker(broker.Addr(), broker.BrokerID()).
+			SetLeader("foo", 0, broker.BrokerID()).
+			SetLeader("ignore", 0, broker.BrokerID()),
+	})
 
-	metadata := new(sarama.MetadataResponse)
-	metadata.AddTopicPartition("foo", 0, leader.BrokerID(), nil, nil, sarama.ErrNoError)
-	metadata.AddBroker(leader.Addr(), leader.BrokerID())
-	seedBroker.Returns(metadata)
-
-	metadata = new(sarama.MetadataResponse)
-	metadata.AddTopicPartition("foo", 0, leader.BrokerID(), []int32{leader.BrokerID()}, []int32{leader.BrokerID()}, sarama.ErrNoError)
-	metadata.AddBroker(leader.Addr(), leader.BrokerID())
-	leader.Returns(metadata)
-
-	kafka, err := sarama.NewClient([]string{seedBroker.Addr()}, sarama.NewConfig())
+	kafka, err := sarama.NewClient([]string{broker.Addr()}, sarama.NewConfig())
 	assert.NoError(t, err)
-	// Open all broker connections
 	for _, b := range kafka.Brokers() {
 		b.Open(kafka.Config())
 	}
@@ -122,35 +127,43 @@ func TestMonitor_getBrokerMetadata(t *testing.T) {
 		client:  kafka,
 		stateCh: make(chan interface{}, 100),
 		log:     testutil.Logger,
+		ignoreTopics: []string{"ignore"},
 	}
 
 	c.getBrokerMetadata()
 
 	assert.Len(t, c.stateCh, 1)
 
-	seedBroker.Close()
-	leader.Close()
+	broker.Close()
 }
 
 func TestMonitor_getConsumerOffsets(t *testing.T) {
-	seedBroker := sarama.NewMockBroker(t, 1)
-	leader := sarama.NewMockBroker(t, 2)
+	broker := sarama.NewMockBroker(t, 0)
 
 	metadata := new(sarama.MetadataResponse)
-	metadata.AddTopicPartition("foo", 0, leader.BrokerID(), nil, nil, sarama.ErrNoError)
-	metadata.AddBroker(leader.Addr(), leader.BrokerID())
-	seedBroker.Returns(metadata)
+	metadata.AddTopicPartition("foo", 0, broker.BrokerID(), nil, nil, sarama.ErrNoError)
+	metadata.AddTopicPartition("unread", 0, broker.BrokerID(), nil, nil, sarama.ErrNoError)
+	metadata.AddTopicPartition("ignore", 0, broker.BrokerID(), nil, nil, sarama.ErrNoError)
+	metadata.AddBroker(broker.Addr(), broker.BrokerID())
+	broker.Returns(metadata)
 
-	leader.Returns(&sarama.ListGroupsResponse{
+	broker.Returns(&sarama.ListGroupsResponse{
 		Err:    sarama.ErrNoError,
-		Groups: map[string]string{"test": "test"},
+		Groups: map[string]string{"test": "consumer", "unread": "consumer", "ignore": "consumer"},
 	})
 
-	seedBroker.Returns(&sarama.ConsumerMetadataResponse{
+	broker.Returns(&sarama.ConsumerMetadataResponse{
 		Err:             sarama.ErrNoError,
-		CoordinatorID:   leader.BrokerID(),
+		CoordinatorID:   broker.BrokerID(),
 		CoordinatorHost: "127.0.0.1",
-		CoordinatorPort: leader.Port(),
+		CoordinatorPort: broker.Port(),
+	})
+
+	broker.Returns(&sarama.ConsumerMetadataResponse{
+		Err:             sarama.ErrNoError,
+		CoordinatorID:   broker.BrokerID(),
+		CoordinatorHost: "127.0.0.1",
+		CoordinatorPort: broker.Port(),
 	})
 
 	offset := new(sarama.OffsetFetchResponse)
@@ -158,23 +171,30 @@ func TestMonitor_getConsumerOffsets(t *testing.T) {
 		Err:    sarama.ErrNoError,
 		Offset: 123,
 	})
-	leader.Returns(offset)
+	broker.Returns(offset)
+
+	offsetUnread := new(sarama.OffsetFetchResponse)
+	offsetUnread.AddBlock("unread", 0, &sarama.OffsetFetchResponseBlock{
+		Err:    sarama.ErrNoError,
+		Offset: -1,
+	})
+	broker.Returns(offsetUnread)
 
 	conf := sarama.NewConfig()
 	conf.Version = sarama.V0_10_1_0
-	kafka, err := sarama.NewClient([]string{seedBroker.Addr()}, conf)
+	kafka, err := sarama.NewClient([]string{broker.Addr()}, conf)
 	assert.NoError(t, err)
 
 	c := &Monitor{
 		client:  kafka,
 		stateCh: make(chan interface{}, 100),
 		log:     testutil.Logger,
+		ignoreGroups: []string{"ignore"},
 	}
 
 	c.getConsumerOffsets()
 
 	assert.Len(t, c.stateCh, 1)
 
-	seedBroker.Close()
-	leader.Close()
+	broker.Close()
 }

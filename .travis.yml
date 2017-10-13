@@ -2,7 +2,6 @@ sudo: false
 
 language: go
 go:
-  - 1.8
   - 1.9
 
 env:

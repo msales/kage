@@ -175,7 +175,7 @@ func (m *Monitor) getBrokerOffsets() {
 						continue
 					}
 
-					m.log.Warn(fmt.Sprintf("rrror in OffsetResponse for %s:%v from broker %v: %s", topic, partition, brokerID, offsetResp.Err.Error()))
+					m.log.Warn(fmt.Sprintf("error in OffsetResponse for %s:%v from broker %v: %s", topic, partition, brokerID, offsetResp.Err.Error()))
 					continue
 				}
 
