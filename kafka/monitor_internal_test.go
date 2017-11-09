@@ -146,6 +146,7 @@ func TestMonitor_getConsumerOffsets(t *testing.T) {
 	metadata.AddTopicPartition("ignore", 0, broker.BrokerID(), nil, nil, sarama.ErrNoError)
 	metadata.AddBroker(broker.Addr(), broker.BrokerID())
 	broker.Returns(metadata)
+	broker.Returns(metadata)
 
 	broker.Returns(&sarama.ListGroupsResponse{
 		Err:    sarama.ErrNoError,

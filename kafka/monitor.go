@@ -100,6 +100,11 @@ func (m *Monitor) Close() {
 
 // getTopics gets the topics for the Kafka cluster.
 func (m *Monitor) getTopics() map[string]int {
+	// If auto create topics is on, trying to fetch metadata for a missing
+	// topic will recreate it. To get around this we refresh the metadata
+	// before getting topics and partitions.
+	m.client.RefreshMetadata();
+
 	topics, _ := m.client.Topics()
 
 	topicMap := make(map[string]int)
