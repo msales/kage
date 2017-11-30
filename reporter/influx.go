@@ -114,7 +114,7 @@ func (r InfluxReporter) ReportBrokerOffsets(o *store.BrokerOffsets) {
 	}
 
 	if err := r.client.Write(pts); err != nil {
-		r.log.Error(err.Error())
+		r.log.Error("influx: offsets:" + err.Error())
 	}
 }
 
@@ -163,7 +163,7 @@ func (r InfluxReporter) ReportBrokerMetadata(m *store.BrokerMetadata) {
 	}
 
 	if err := r.client.Write(pts); err != nil {
-		r.log.Error(err.Error())
+		r.log.Error("influx: metadata:" + err.Error())
 	}
 }
 
@@ -209,6 +209,6 @@ func (r InfluxReporter) ReportConsumerOffsets(o *store.ConsumerOffsets) {
 	}
 
 	if err := r.client.Write(pts); err != nil {
-		r.log.Error(err.Error())
+		r.log.Error("influx: consumer-offsets:" + err.Error())
 	}
 }
