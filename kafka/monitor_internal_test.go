@@ -124,9 +124,9 @@ func TestMonitor_getBrokerMetadata(t *testing.T) {
 	}
 
 	c := &Monitor{
-		client:  kafka,
-		stateCh: make(chan interface{}, 100),
-		log:     testutil.Logger,
+		client:       kafka,
+		stateCh:      make(chan interface{}, 100),
+		log:          testutil.Logger,
 		ignoreTopics: []string{"ignore"},
 	}
 
@@ -187,9 +187,9 @@ func TestMonitor_getConsumerOffsets(t *testing.T) {
 	assert.NoError(t, err)
 
 	c := &Monitor{
-		client:  kafka,
-		stateCh: make(chan interface{}, 100),
-		log:     testutil.Logger,
+		client:       kafka,
+		stateCh:      make(chan interface{}, 100),
+		log:          testutil.Logger,
 		ignoreGroups: []string{"ignore"},
 	}
 

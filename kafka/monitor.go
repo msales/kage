@@ -103,7 +103,7 @@ func (m *Monitor) getTopics() map[string]int {
 	// If auto create topics is on, trying to fetch metadata for a missing
 	// topic will recreate it. To get around this we refresh the metadata
 	// before getting topics and partitions.
-	m.client.RefreshMetadata();
+	m.client.RefreshMetadata()
 
 	topics, _ := m.client.Topics()
 
