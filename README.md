@@ -54,7 +54,7 @@ Kage can be configured with command line flags and environment variables.
 | --influx.policy | | No | The retention policy to report statistics under. | KAGE_INFLUX_POLICY |
 | --influx.tags | | Yes | Additional tags to add to the statistics. Format: 'key=value' | KAGE_INFLUX_TAGS |
 | --server | | No | Start the http server. | KAGE_SERVER |
-| --port | | No | The address to bind to for the http server. | KAGE_PORT |
+| --port | | No | The port to bind to for the http server. | KAGE_PORT |
 
 ##### Multi value environment variables
 
@@ -63,7 +63,7 @@ E.g. `--reporters=stdout --reporters=influx` should become `KAGE_REPORTERS=stdou
 
 ## HTTP Endpoints
 
-Kage has an optional http server that can be enabled with the `--addr` configuration. This allows health checking
+Kage has an optional http server that can be enabled with the `--server` configuration. This allows health checking
 as well as fetching broker and consumer group information. The endpoints are as follows:
 
 #### GET /health
