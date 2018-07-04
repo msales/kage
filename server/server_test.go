@@ -22,7 +22,7 @@ func TestBrokersHandler(t *testing.T) {
 	rr := httptest.NewRecorder()
 
 	monitor := new(mocks.MockMonitor)
-	monitor.On("Brokers").Return([]kafka.Broker{{0, false}})
+	monitor.On("Brokers").Return([]kafka.Broker{{ID: 0, Connected: false}})
 
 	app := &kage.Application{Monitor: monitor}
 
@@ -43,8 +43,8 @@ func TestBrokersHealthHandler(t *testing.T) {
 	rr := httptest.NewRecorder()
 
 	monitor := new(mocks.MockMonitor)
-	monitor.On("Brokers").Return([]kafka.Broker{{0, true}}).Once()
-	monitor.On("Brokers").Return([]kafka.Broker{{0, false}}).Once()
+	monitor.On("Brokers").Return([]kafka.Broker{{ID: 0, Connected: true}}).Once()
+	monitor.On("Brokers").Return([]kafka.Broker{{ID: 0, Connected: false}}).Once()
 
 	app := &kage.Application{Monitor: monitor}
 
