@@ -12,7 +12,7 @@ docker:
 
 # Read data from Kafka
 producer:
-	for x in {1..100}; do echo PING; sleep 2; done | \
+	for x in {1..100}; do echo PING; sleep 0.1; done | \
 	docker-compose exec -T kafka \
 		kafka-console-producer.sh \
         --broker-list localhost:9092 \
