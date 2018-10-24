@@ -1,13 +1,12 @@
 # Build container
-FROM golang:1.9 as builder
+FROM golang:1.11 as builder
 
-RUN go get -u github.com/golang/dep/cmd/dep
+ENV GO111MODULE=on
 
 WORKDIR /go/src/github.com/msales/kage/
 COPY ./ .
-RUN dep ensure
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-s' -o kage ./cmd/kage
+RUN CGO_ENABLED=0 GOOS=linux go build -a -ldflags "-s -X main.Version=$(git describe --tags --always)" -o kage ./cmd/kage
 
 # Run container
 FROM scratch

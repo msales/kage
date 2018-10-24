@@ -29,6 +29,9 @@ const (
 	FlagPort   = "port"
 )
 
+// Version is the compiled application version.
+var Version = "¯\\_(ツ)_/¯"
+
 var commonFlags = []cli.Flag{
 	cli.StringFlag{
 		Name:   FlagLog,

@@ -1,24 +1,21 @@
-sudo: false
-
 language: go
 go:
-  - "1.10"
+  - "1.11"
 
 env:
   global:
-  - REPO=msales/kage
+  - GO111MODULE=on
 
 before_install:
-  - go get -u github.com/golang/dep/cmd/dep golang.org/x/lint/golint
+  - go get -u golang.org/x/lint/golint
   - go get github.com/mitchellh/gox
   - go get github.com/mattn/goveralls
   - go get golang.org/x/tools/cmd/cover
 
 script:
-  - dep ensure
-  - golint $(go list ./... | grep -v /vendor/)
-  - go vet $(go list ./... | grep -v /vendor/)
-  - go test -cover $(go list ./... | grep -v /vendor/)
+  - golint ./...
+  - go vet ./...
+  - go test -cover ./...
   - $HOME/gopath/bin/goveralls -service=travis-ci -ignore=testutil/*,testutil/mocks/*
 
 before_deploy:
