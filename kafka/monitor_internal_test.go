@@ -139,47 +139,24 @@ func TestMonitor_getBrokerMetadata(t *testing.T) {
 
 func TestMonitor_getConsumerOffsets(t *testing.T) {
 	broker := sarama.NewMockBroker(t, 0)
-
-	metadata := new(sarama.MetadataResponse)
-	metadata.AddTopicPartition("foo", 0, broker.BrokerID(), nil, nil, sarama.ErrNoError)
-	metadata.AddTopicPartition("unread", 0, broker.BrokerID(), nil, nil, sarama.ErrNoError)
-	metadata.AddTopicPartition("ignore", 0, broker.BrokerID(), nil, nil, sarama.ErrNoError)
-	metadata.AddBroker(broker.Addr(), broker.BrokerID())
-	broker.Returns(metadata)
-	broker.Returns(metadata)
-
-	broker.Returns(&sarama.ListGroupsResponse{
-		Err:    sarama.ErrNoError,
-		Groups: map[string]string{"test": "consumer", "unread": "consumer", "ignore": "consumer"},
+	broker.SetHandlerByMap(map[string]sarama.MockResponse{
+		"MetadataRequest": sarama.NewMockMetadataResponse(t).
+			SetBroker(broker.Addr(), broker.BrokerID()).
+			SetLeader("foo", 0, broker.BrokerID()),
+		"ConsumerMetadataRequest": sarama.NewMockConsumerMetadataResponse(t).
+			SetCoordinator("test", broker).
+			SetCoordinator("ignore", broker),
+		"ListGroupsRequest": sarama.NewMockWrapper(&sarama.ListGroupsResponse{
+				Err: sarama.ErrNoError,
+			Groups:  map[string]string{"test": "consumer", "unread": "consumer", "ignore": "consumer"},
+		}),
+		"FindCoordinatorRequest": sarama.NewMockFindCoordinatorResponse(t).
+			SetCoordinator(sarama.CoordinatorGroup, "test", broker).
+			SetCoordinator(sarama.CoordinatorGroup, "unread", broker),
+		"OffsetFetchRequest": sarama.NewMockOffsetFetchResponse(t).
+			SetOffset("test", "foo", 0, 123, "", sarama.ErrNoError).
+			SetOffset("unread", "foo", 0, -1, "", sarama.ErrNoError),
 	})
-
-	broker.Returns(&sarama.ConsumerMetadataResponse{
-		Err:             sarama.ErrNoError,
-		CoordinatorID:   broker.BrokerID(),
-		CoordinatorHost: "127.0.0.1",
-		CoordinatorPort: broker.Port(),
-	})
-
-	broker.Returns(&sarama.ConsumerMetadataResponse{
-		Err:             sarama.ErrNoError,
-		CoordinatorID:   broker.BrokerID(),
-		CoordinatorHost: "127.0.0.1",
-		CoordinatorPort: broker.Port(),
-	})
-
-	offset := new(sarama.OffsetFetchResponse)
-	offset.AddBlock("test", 0, &sarama.OffsetFetchResponseBlock{
-		Err:    sarama.ErrNoError,
-		Offset: 123,
-	})
-	broker.Returns(offset)
-
-	offsetUnread := new(sarama.OffsetFetchResponse)
-	offsetUnread.AddBlock("unread", 0, &sarama.OffsetFetchResponseBlock{
-		Err:    sarama.ErrNoError,
-		Offset: -1,
-	})
-	broker.Returns(offsetUnread)
 
 	conf := sarama.NewConfig()
 	conf.Version = sarama.V0_10_1_0
